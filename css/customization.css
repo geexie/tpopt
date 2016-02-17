@@ -1,0 +1,118 @@
+body {
+  color: #f0e7d5;
+  background-size: 8px 8px;
+  background-repeat: repeat;
+  background-color: #353535;
+  background-image: linear-gradient(-45deg, rgba(0, 0, 0, .1) 25%, transparent 25%,
+            transparent 50%, rgba(0, 0, 0, .1) 50%, rgba(0, 0, 0, .1) 75%,
+            transparent 75%, transparent);
+}
+
+.reveal {
+  color: #f7f2d3;
+}
+
+.reveal h1, .reveal h2, h1, h2 {
+  color: #FF8D14;
+}
+
+.reveal h1 {
+  text-shadow: 0 1px 0 #b5533c, 0 2px 0 #b5533c, 0 3px 0 #b5533c,
+               0 4px 0 #b5533c, 0 5px 0 #b5533c, 0 6px 1px
+               rgba(0, 0, 0, 0.1), 0 0 5px rgba(0, 0, 0, 0.1), 0 1px 3px
+               rgba(0, 0, 0, 0.3), 0 3px 5px rgba(0, 0, 0, 0.2), 0 5px 10px
+               rgba(0, 0, 0, 0.25), 0 20px 20px rgba(0, 0, 0, 0.15);
+}
+
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  color: #FFF;
+}
+
+.reveal blockquote {
+  width: 95%;
+}
+
+.reveal dt {
+  font-weight: bold;
+  color: #FF8D14;
+}
+
+.reveal dd {
+  padding-bottom: 20px;
+}
+
+/***********************
+*    Debug settings    *
+***********************/
+
+.reveal .slides > section.present,
+.reveal .slides > section > section.present {
+  background-color: rgba(255, 255, 255, 0.10);
+}
+
+.reveal .slides {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+/*
+.reveal b {
+  color: #FF8D14;
+}
+
+pre b .number {
+  color: #FF8D14;
+}
+
+.reveal a:hover img {
+  border-color: #FF8D14;
+}*/
+
+/*********************************************
+ * NAVIGATION CONTROLS
+ *********************************************/
+/*.reveal .controls .navigate-left,
+.reveal .controls .navigate-left.enabled {
+  border-right-color: #FF8D14;
+}
+*/
+/*.reveal .controls .navigate-right,
+.reveal .controls .navigate-right.enabled {
+  border-left-color: #FF8D14;
+}
+*/
+/*.reveal .controls .navigate-up,
+.reveal .controls .navigate-up.enabled {
+  border-bottom-color: #FF8D14;
+}
+*/
+/*.reveal .controls .navigate-down,
+.reveal .controls .navigate-down.enabled {
+  border-top-color: #FF8D14;
+}
+*/
+/*.reveal .controls .navigate-left.enabled:hover {
+  border-right-color: #D68A3E;
+}
+*/
+/*.reveal .controls .navigate-right.enabled:hover {
+  border-left-color: #D68A3E;
+}
+*/
+/*.reveal .controls .navigate-up.enabled:hover {
+  border-bottom-color: #D68A3E;
+}
+*/
+/*.reveal .controls .navigate-down.enabled:hover {
+  border-top-color: #D68A3E;
+}*/
+
+/*.reveal .progress span {
+  background: #FF9C33;
+}*/
+
+/*.reveal .slide-number {
+  color: #FF9C33;
+}*/
