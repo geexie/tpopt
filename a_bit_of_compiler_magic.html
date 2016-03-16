@@ -1,0 +1,1244 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>reveal.js – The HTML Presentation Framework</title>
+
+    <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+    <meta name="author" content="Hakim El Hattab">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/white.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+  <style type="text/css">
+  .reveal .console {
+    font-family:Courier;
+    color: #CCCCCC;
+    background: #000000;
+  }
+  </style>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+        <section>
+          <h1>Pragmatic Optimization</h1>
+          <h3>in Modern Programming</h3>
+          <h2>A bit of compiler magic</h2>
+          <p>
+            <small>Created by <a href="https://github.com/cuda-geek">Marina Kolpakova</a>, Itseez / 2016</small>
+          </p>
+        </section>
+
+        <section>
+          <h2>Outline</h2>
+          <ul>
+            <li>Pragmatic approach</li>
+            <li>Before we start: Getting feedback</li>
+            <li>The magic box</li>
+            <li>How to learn optimization?</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Pragmatic approach</h2>
+          <blockquote style="width:100%">&ldquo;Programmers waste enormous amounts of time thinking about, or worrying about, the speed of non-critical
+          parts of their programs, and these attempts at efficiency actually have a strong negative impact when
+          debugging and maintenance are considered. We should forget about small inefficiencies, say about 97% of the time;
+          <b>premature optimization is the root of all evil</b>. Yet we should not pass up our opportunities in
+          that critical 3%.&ldquo;
+            <div style="text-align:right;">
+              <small>-Donald Knuth, Structured Programming With go to Statements</small>
+            </div>
+          </blockquote>
+          <ol style="width:100%">
+            <li><strong>Find what to start from (3%)</strong></li>
+            <li><strong>Know when to stop (97%)</strong></li>
+          </ol>
+        </section>
+
+        <section>
+          <h1>Before we start...</h1>
+        </section>
+
+        <section>
+          <h2>Getting feedback</h2>
+          <ul>
+            <li><b>Check wall-time of you application</b>
+              <ul>
+              <li>If a compiler does it right, you will see some uplift</li>
+              </ul>
+            </li>
+            <li><b>Dump an assembly of your code</b> (or/and IL)
+              <ul>
+                <li>Ensure instruction and register scheduling</li>
+                <li>Check for extra operations and register spills</li>
+              </ul>
+            </li>
+            <li><b>See compiler optimization report</b>
+              <ul>
+                <li>All the compilers have some support for it</li>
+                <li>Some of them are able to generate very detailed reports
+                about loop unrolling, auto-vectorization, VLIW slots scheduling, etc</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Considered metrics</h2>
+          <dl>
+            <dt>Wall(-clock) time</dt>
+            <dd><i>is a human perception of the span of time from the start to the completion of a task.</i></dd>
+            <dt>Power consumption</dt>
+            <dd>is the electrical energy which is consumed to complete a task.</dd>
+            <dt><b>Processor time (or runtime)</b></dt>
+            <dd>is the total execution time during which a processor was dedicated to a task (i.e. executes instructions of that task).</dd>
+          </dl>
+        </section>
+
+        <section>
+
+          <section>
+            <h2>Assembly</h2>
+            <blockquote style="width:100%"><b>Assembler is a must-have to check the compiler</b> <br>
+            but it is rarely used to write low-level code.</blockquote>
+            <span class="console">$ gcc code.c -S -o asm.s</span>
+            <ul>
+              <li>Assembly writing is the least portable optimization</li>
+              <li>Inline assembly limits compiler optimizations</li>
+              <li>Assembly does not give overwhelming speedup nowadays</li>
+              <li>Sometimes it is needed to overcome compiler bugs and optimization limitations</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Intermediate language</h2>
+            <blockquote style="width:100%">Intermediate language (IR) is an source code representation in some abstract
+            Instruction Set Architecture, which is close to a classic RISC</blockquote>
+            <dl>
+              <dt><b>High Level IR</b></dt>
+              <dd>is close to the source and can be easily generated from the source code. Some code optimizations
+              are possible. It is not very suitable for target machine optimization.</dd>
+              <dt><b>Low Level IR</b></dt>
+              <dd>is close to the target machine and used for machine-dependent optimizations: register allocation,
+              instruction selection, peephole optimization.</dd>
+            </dl>
+          </section>
+
+          <section>
+            <h2>Getting IL</h2>
+            <p>Provides frontend independent code representation.</p>
+            <dl>
+              <dt><a href="https://gcc.gnu.org/onlinedocs/gccint/GENERIC.html#GENERIC">GENERIC</a>
+              and <a href="https://gcc.gnu.org/onlinedocs/gccint/GIMPLE.html">GIMPLE</a></dt>
+              <dd>GNU Compiler Collection<br>
+                <div style="vertical-align:middle;" class="console">
+                  <span>-fdump-tree-all-fdump-tree-optimized -fdump-tree-<abbr attr title="Static Single Assignment">ssa</abbr></span><br>
+                  <span> -fdump-<abbr title="Register Transfer Language">rtl</abbr>-all</span>
+                </div>
+              </dd>
+              <dt><a href="http://llvm.org/docs/LangRef.html">LLVM IL</a></dt>
+              <dd>clang and other LLWM based compilers<br>
+                <div  style="vertical-align:middle;" class="console">-emit-llvm</div>
+              </dd>
+              <dt>CIL (C Intermediate Language)</dt>
+              <dd>Visual Studio cl.exe</dd>
+            </dl>
+          </section>
+
+          <section>
+          <h2>Getting IL</h2>
+            <pre class="console"><span>$ clang -Os -S -emit-llvm test.c -o test.ll
+$ cat test.ll</span></pre>
+            <pre class="cpp"><code>for( ; j <= width - 4; j += 4 )
+{
+    uchar t0 = tab[src[j]];
+    uchar t1 = tab[src[j+1]];
+    dst[j] = t0;
+    dst[j+1] = t1;
+    t0 = tab[src[j+2]];
+    t1 = tab[src[j+3]];
+    dst[j+2] = t0;
+    dst[j+3] = t1;
+}</code></pre>
+            </section>
+
+            <section>
+              <h2>Getting IL</h2>
+              <pre class="cpp" style="width:100%;font-size:0.45em"><code>.lr.ph4:                     ; preds = %0, %.lr.ph4
+  %indvars.iv5 = phi i64 [ %indvars.iv.next6, %.lr.ph4 ], [ 0, %0 ]
+  %6 = getelementptr inbounds i8* %src, i64 %indvars.iv5
+  %7 = load i8* %6, align 1, !tbaa !1
+  %8 = zext i8 %7 to i64
+  %9 = getelementptr inbounds i8* %tab, i64 %8
+  %10 = load i8* %9, align 1, !tbaa !1
+  %11 = or i64 %indvars.iv5, 1
+  %12 = getelementptr inbounds i8* %src, i64 %11
+  // even more code here
+  %30 = load i8* %29, align 1, !tbaa !1
+  %31 = getelementptr inbounds i8* %dst, i64 %19
+  store i8 %24, i8* %31, align 1, !tbaa !1
+  %32 = getelementptr inbounds i8* %dst, i64 %25
+  store i8 %30, i8* %32, align 1, !tbaa !1
+  %indvars.iv.next6 = add nuw nsw i64 %indvars.iv5, 4
+  %33 = trunc i64 %indvars.iv.next6 to i32
+  %34 = icmp sgt i32 %33, %1
+  br i1 %34, label %..preheader_crit_edge, label %.lr.ph4
+</code></pre>
+            <p>Compiler don't care how many variables are used in code, register allocation is done after IR rotations.</p>
+          </section>
+
+        </section>
+
+        <section>
+
+          <section>
+            <h2>Example: GCC feedback options</h2>
+            <ul>
+              <li>Enables optimization information printing
+              <pre><strong><div class="console">-fopt-info</div></strong></pre>
+              <pre><div class="console">-fopt-info-&lt;optimized/missed/note/all&gt;</div></pre>
+              <pre><div class="console">-fopt-info-all-&lt;ipa/loop/inline/vec/optall&gt;</div></pre>
+              <pre><div class="console">-fopt-info=filename</div></pre>
+              </li>
+              <li>Controls the amount of debugging output the scheduler prints on targets
+              that use instruction scheduling
+              <pre><div class="console">-fopt-info -fsched-verbose=n</div></pre>
+              </li>
+              <li>Controls the amount of output from auto-vectorizer
+              <pre><div class="console">-ftree-vectorizer-verbose=n </div></pre></li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Examples: GCC feedback options</h2>
+            <ul>
+              <li>Outputs all optimization info to stderr.
+                <pre><div class="console">gcc -O3 -fopt-info</div></pre>
+              </li>
+              <li>Outputs missed optimization report from all the passes to missed.txt
+                <pre><div class="console">gcc -O3 -fopt-info-missed=missed.txt</div></pre>
+              </li>
+              <li>Outputs information about missed optimizations as well as optimized locations from all the inlining
+              passes to inline.txt.
+                <pre><div class="console">gcc -O3 -fopt-info-inline-optimized-missed=inline.txt</div></pre>
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>GCC feedback example</h2>
+            <pre class="console"><span>1.cc:193:9: note: loop <b>vectorized</b>
+1.cc:193:9: note: loop <b>versioned</b> for vectorization because of possible aliasing
+1.cc:193:9: note: loop <b>peeled</b> for vectorization to enhance alignment
+1.cc:96:9: note: loop vectorized
+1.cc:96:9: note: loop peeled for vectorization to enhance alignment
+1.cc:51:9: note: loop vectorized
+1.cc:51:9: note: loop peeled for vectorization to enhance alignment
+1.cc:193:9: note: loop with 7 iterations completely <b>unrolled</b>
+1.cc:32:13: note: loop with 7 iterations completely unrolled
+1.cc:96:9: note: loop with 15 iterations completely unrolled
+1.cc:51:9: note: loop with 15 iterations completely unrolled
+1.cc:584:9: note: loop vectorized
+1.cc:584:9: note: loop versioned for vectorization because of possible aliasing
+1.cc:584:9: note: loop peeled for vectorization to enhance alignment
+1.cc:482:9: note: loop vectorized
+1.cc:482:9: note: loop peeled for vectorization to enhance alignment
+1.cc:463:5: note: loop vectorized
+1.cc:463:5: note: loop versioned for vectorization because of possible aliasing
+1.cc:463:5: note: loop peeled for vectorization to enhance alignment</span></pre>
+          </section>
+
+        </section>
+
+        <section>
+          <h1>The magic box!</h1>
+        </section>
+
+        <section>
+
+          <section>
+            <h2>Filling/copying memory blocks</h2>
+            <p>Compiler automatically uses the library functions <code>memset</code> and <code>memcpy</code>
+            to initialize and copy memory blocks</p>
+            <pre><code data-trim class="cpp">static char a[100000];
+static char b[100000];
+static int at(int idx, char val)
+{
+ if (idx&gt;=0 &amp;&amp; idx&lt;100000)
+  a[idx] = val;
+}
+int main()
+{
+ int i;
+ for (i=0; i&lt;100000; ++i) a[i]=42;
+ for (i=0; i&lt;100000; ++i) at(i,-1);
+ for (i=0; i&lt;100000; ++i) b[i] = a[i];
+}</code></pre>
+          </section>
+
+          <section>
+            <h2>Filling/copying memory blocks</h2>
+            <p>Compiler knows what you mean</p>
+            <pre><code style="max-height:720px;" class="x86asm">main:
+.LFB1:
+  .cfi_startproc
+  subq  $8, %rsp
+  .cfi_def_cfa_offset 16
+  movl  $100000, %edx
+  movl  $42, %esi
+  movl  $a, %edi
+  call  memset
+  movl  $100000, %edx
+  movl  $255, %esi
+  movl  $a, %edi
+  call  memset
+  movl  $100000, %edx
+  movl  $a, %esi
+  movl  $b, %edi
+  call  memcpy
+  addq  $8, %rsp
+  .cfi_def_cfa_offset 8
+  ret</code></pre>
+          </section>
+
+          <section>
+            <h2>Filling/copying memory blocks</h2>
+            <p>The same picture, if the code is compiled for ARM target</p>
+            <pre><code style="max-height:720px;" class="x86asm">main:
+  ldr r3, .L3
+  mov r1, #42
+  stmfd sp!, {r4, lr}
+  add r3, pc, r3
+  movw  r4, #34464
+  movt  r4, 1
+  mov r0, r3
+  mov r2, r4
+  bl  memset(PLT)
+  mov r2, r4
+  mov r1, #255
+  bl  memset(PLT)
+  mov r2, r4
+  mov r3, r0
+  ldr r0, .L3+4
+  mov r1, r3
+  add r0, pc, r0
+  add r0, r0, #1792
+  bl  memcpy(PLT)
+  ldmfd sp!, {r4, pc}</code></pre>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Function body inlining</h2>
+            Replaces functional call to function body itself<br>
+            <strong>Enables all further optimizations</strong>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre  style="width:100%"><code class="cpp">int square(int x)
+{
+  return x*x;
+}
+
+for (int i = 0; i < len; i++)
+  arr[i] = square(i);</code></pre>
+                    Becomes
+                    <pre  style="width:100%"><code class="cpp">for (int i = 0; i < len; i++)
+  arr[i] = i*i;</code></pre>
+                  </td>
+                  <td>
+    <!-- movk - Move 16-bit immediate into register, keeping other bits unchanged. -->
+                    <pre style="width:100%"><code class="armasm">.L2:
+  add x2, x4, :lo12:.LANCHOR0
+  mov x1, 34464
+  mul w3, w0, w0
+  movk  x1, 0x1, lsl 16
+  str w3, [x2,x0,lsl 2]
+  add x0, x0, 1
+  cmp x0, x1
+  bne .L2</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="console">gcc -march=armv8-a+nosimd -fstrict-aliasing  -O3 -fopt-info 1.c -S -o 1.s</div>
+          </section>
+
+          <section>
+            <h2>Auto-vectorization</h2>
+            <ul>
+              <li>Machine code generation that takes an advantage of vector instructions.</li>
+              <li>Most of all modern architectures have vector extensions (as a co-processor or as specialized pipes)
+                <ul>
+                  <li>MMX, SSE, SSE2, SSE4, AVX, AVX-512</li>
+                  <li>AltiVec, VSX</li>
+                  <li>ASIMD (NEON), MSA</li>
+                </ul>
+              </li>
+              <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, and
+              other machine independent transformations.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Function body inlining</h2>
+            Let's compile the previous example with vector extension enabled
+            <strong><code>-march=armv8-a+simd</code></strong>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre style="width:100%"><code class="cpp">int square(int x)
+{
+  return x*x;
+}
+
+for (int i = 0; i < len; i++)
+  arr[i] = square(i);</code></pre>
+                    Becomes
+                    <pre style="width:100%"><code class="cpp">for (int i = 0; i < len; i++)
+  arr[i] = i*i;</code></pre>
+                  </td>
+                  <td>
+                    <pre style="width:100%"><code class="armasm"> add x0, x0, :lo12:.LANCHOR0
+ movi  v2.4s, 0x4
+ ldr q0, [x1]
+ add x1, x0, 397312
+ add x1, x1, 2688
+.L2:
+ mul v1.4s, v0.4s, v0.4s
+ add v0.4s, v0.4s, v2.4s
+ str q1, [x0],16
+ cmp x0, x1
+ bne .L2</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>It is vectorized because of possibility to inline function call</p>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Auto-vectorization</h2>
+            <pre><code class="cpp">void vectorizeMe(float *a, float *b, int len)
+{
+  int i;
+  for (i = 0; i < len; i++)
+    a[i] += b[i];
+}</code></pre>
+            <div class="console">$ gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 -fopt-info-missed 1.c -S -o 1.s</div>
+          </section>
+
+          <section>
+            <h2>Auto-vectorization</h2>
+            <p>NEON does not support full IEEE 754, so gcc cannot vectorize the loop, what it told us</p>
+            <pre><code class="armasm">.L3:
+  fldmias r1!, {s14}
+  flds  s15, [r0]
+  fadds s15, s15, s14
+  fstmias r0!, {s15}
+  cmp r0, r2
+  bne .L3</code></pre>
+            <blockquote style="width:100%">1.c:64:3: note: not vectorized: <br/>relevant stmt not supported: _13 = _9 + _12;</blockquote>
+          </section>
+
+          <section>
+            <h2>Auto-vectorization</h2>
+            <p>But armv8-a does support, let's check it!</p>
+            <div class="console">gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 -fopt-info-missed 1.c -S -o 1.s</div>
+            <pre><code class="armasm">.L6:
+  ldr q1, [x3],16
+  add w6, w6, 1
+  ldr q0, [x7],16
+  cmp w6, w4
+  fadd  v0.4s, v0.4s, v1.4s
+  str q0, [x8],16
+  bcc .L6</code></pre>
+            <blockquote style="width:100%">1.c:64:3: note: loop vectorized</blockquote>
+          </section>
+
+          <section>
+            <h2>Full optimizer's report</h2>
+            <pre class="console"><span>
+1.c:66:3: note: loop <b>vectorized</b>
+1.c:66:3: note: loop <b>versioned</b> for vectorization because of possible aliasing
+1.c:66:3: note: loop <b>peeled</b> for vectorization to enhance alignment
+1.c:66:3: note: loop with 3 iterations completely <b>unrolled</b>
+1.c:61:6: note: loop with 3 iterations completely <b>unrolled</b>
+            </span></pre>
+            <strong>Compiler versions the loop to allow optimized paths<br/>in case of aligned and non-aliasing pointers</strong>
+          </section>
+
+          <section>
+            <h2>keywords</h2>
+            <p>Lit's follow the advice to put some keywords</p>
+            <pre><code class="cpp">void vectorizeMe(float* __restrict a_,
+    float* __restrict b_, int len)
+{
+  int i;
+  float *a = __builtin_assume_aligned(a_, 16);
+  float *b = __builtin_assume_aligned(b_, 16);
+  for (i = 0; i < len; i++)
+    a[i] += b[i];
+}</code></pre>
+            <blockquote  style="width:100%;text-align: left;">
+              1.c:66:3: note: loop vectorized<br/>
+              1.c:66:3: note: loop with 3 iterations completely unrolled<br/>
+            </blockquote>
+            <strong><code>__restrict</code> and <code>__builtin_assume_aligned</code> keywords only eliminate some loop
+            versioning, but are not very useful from the performance perspective nowadays</strong>
+          </section>
+        </section>
+
+        <section>
+          <h2>Scalarization</h2>
+          <blockquote style="width:100%"><b>Scalarization</b> replaces branchy code with a branchless analogy,
+          usually to allow auto-vectorization of a loop body</blockquote>
+          <table class="simple">
+            <colgroup>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <tbody>
+              <tr>
+                <td width="50%">
+                  <pre style="width:100%"><code class="cpp">int branchy(int i)
+{
+  if (i &gt; 4 && i &lt; 42)
+    return 1;
+  return 0;
+}
+int branchless(int i)
+{
+  return (((unsigned)i) - 5 > 36);
+}
+</code></pre>
+                </td>
+                <td>
+                  <pre><code class="asm">branchy:
+  sub w0, w0, #5
+  cmp w0, 36
+  cset  w0, ls
+  ret
+branchless:
+  sub w0, w0, #5
+  cmp w0, 36
+  cset  w0, hi
+  ret
+</code></pre>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <span class="console">gcc -march=armv8-a+simd -O3 1.c -S -o 1.s</span>
+          <p>Both snippets are compiled to the same instructions!</p>
+        </section>
+
+        <section>
+          <h2>Unswitching</h2>
+          <blockquote style="width:100%"><b>Unswitching</b> moves loop-invariant conditions out of its body</blockquote>
+          <span class="console">gcc -march=armv8-a+simd -O3 1.c -S -o 1.s</span>
+          <table class="simple">
+            <colgroup>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <tbody>
+              <tr>
+                <td width="50%">
+                  <pre style="width:100%"><code class="cpp">for (int i = 0; i < len; i++) {
+  if (a > 32)
+    arr[i] = a;
+  else
+    arr[i] = 42;
+}
+</code></pre>
+                    Becomes
+                  <pre  style="width:100%"><code class="cpp">if (a > 32) {
+  for (int i = 0; i < len; i++)
+    arr[i] = a;
+} else {
+  for (int i = 0; i < len; i++)
+    arr[i] = 42;
+}</code></pre>
+                </td>
+                <td>
+                  <pre style="width:100%;"><code class="armasm" style="max-height:720px;">  cmp w2, 32
+  bgt .L6
+  mov x2, 0
+  mov w3, 42
+.L4:
+  str w3, [x0,x2,lsl 2]
+  add x2, x2, 1
+  cmp w1, w2
+  bgt .L4
+.L1:
+  ret
+.L6:
+  mov x3, 0
+.L3:
+  str w2, [x0,x3,lsl 2]
+  add x3, x3, 1
+  cmp w1, w3
+  bgt .L3</code></pre>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>Loop-induction variables</h2>
+          <blockquote style="width:100%">Replacing address arithmetics with pointer arithmetics</blockquote>
+          <pre class="console"><span>gcc -march=armv7-a -mfpu=neon -mfloat-abi=softfp -O1 1.c -S -o 1.s</span></pre>
+          <table class="simple">
+            <colgroup>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <tbody>
+              <tr>
+                <td style="border-bottom: 0;">
+                  <pre style="width:100%"><code class="cpp">void function(int* arr, int len)
+{
+  for (int i = 0; i < len; i++)
+    arr[i] = 1;
+}</code></pre>
+                  <pre><code class="armacm">  mov r3, r0
+  add r0, r0, r1, lsl #2
+  movs  r2, #1
+.L3:
+  str r2, [r3], #4
+  cmp r3, r0
+  bne .L3</code></pre>
+                </td>
+                <td style="border-bottom: 0;">
+                  <pre  style="width:100%"><code class="cpp">void function(int* arr, int len)
+{
+  for (int* p = arr; p < arr + len; p++)
+      *p = 1;
+}</code></pre>
+                  <pre><code class="armasm">
+  add r1, r0, r1, lsl #2
+  movs  r3, #1
+.L8:
+  str r3, [r0], #4
+  cmp r1, r0
+  bhi .L8</code></pre>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            <b>Most hand-written pointer optimizations do not make sense with usage optimization levels
+            higher than O0.</b>
+          </p>
+        </section>
+
+        <section>
+          <section>
+            <h2>Strength Reduction</h2>
+            <blockquote style="width:100%">Replaces complex expressions with a simpler analogy</blockquote>
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td style="border-bottom: 0;">
+                    <pre style="width:100%"><code class="cpp">double usePow(double x)
+{
+  return pow(x, 2.0);
+}
+
+</code></pre>
+                  </td>
+                  <td style="border-bottom: 0;">
+                    <pre style="width:100%"><code class="armasm">usePow:
+  fmdrr d16, r0, r1
+  fmuld d16, d16, d16
+  fmrrd r0, r1, d16
+  bx  lr
+</code></pre>
+                  </td>
+                </tr>
+                <tr style="background-color:rgba(0,0,0,0);">
+                  <td>
+                    <pre style="width:100%"><code class="cpp">float usePowf(float x)
+{
+  return powf(x, 2.f);
+}
+
+</code></pre>
+                  </td>
+                  <td>
+                    <pre style="width:100%"><code class="armasm">usePowf:
+  fmsr  s15, r0
+  fmuls s15, s15, s15
+  fmrs  r0, s15
+  bx  lr</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="console">gcc -march=armv7-a -mfpu=vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</div>
+          </section>
+
+          <section>
+            <h2>Strength Reduction (advanced)</h2>
+            Let's look at more complex expression.
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre style="width:100%"><code class="cpp">float useManyPowf(
+  float a, float b,
+  float c, float d,
+  float e, float f,
+  float x)
+{
+ return
+  a * powf(x,5.f)+
+  b * powf(x,4.f)+
+  c * powf(x,3.f)+
+  d * powf(x,2.f)+
+  e * x          +
+  f;
+}</code></pre>
+                  </td>
+                  <td>
+                    <pre style="width:100%;"><code style="max-height:720px;" class="armasm">useManyPowf:
+ push  {r3, lr}
+ flds  s17, [sp, #56]
+ fmsr  s24, r1
+ movs  r1, #0
+ fmsr  s22, r0
+ movt  r1, 16544
+ fmrs  r0, s17
+ fmsr  s21, r2
+ fmsr  s20, r3
+ flds  s19, [sp, #48]
+ flds  s18, [sp, #52]
+ bl  powf(PLT)
+ mov r1, #1082130432
+ fmsr  s23, r0
+ fmrs  r0, s17
+ bl  powf(PLT)
+</code></pre>
+                  </td>
+                  <td>
+                    <pre style="width:100%"><code class="armasm"> movs  r1, #0
+ movt  r1, 16448
+ fmsr  s16, r0
+ fmrs  r0, s17
+ bl  powf(PLT)
+ fmuls s16, s16, s24
+ vfma.f32  s16, s23, s22
+ fmsr  s15, r0
+ vfma.f32  s16, s15, s21
+ fmuls s15, s17, s17
+ vfma.f32  s16, s20, s15
+ vfma.f32  s16, s19, s17
+ fadds s15, s16, s18
+ fldmfdd sp!, {d8-d12}
+ fmrs  r0, s15
+ pop {r3, pc}</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!-- <span>gcc -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</span> -->
+            <p>GCC was able partly reduce the complexity using <code>vfma</code></p>
+          </section>
+
+          <section>
+            <h2>Horner's rule</h2>
+            <pre style="width:100%"><code class="cpp">float applyHornerf(float a, float b, float c,
+                   float d, float e, float f, float x)
+{
+  return ((((a * x + b) * x + c) * x + d) * x + e) * x + f;
+}</code></pre>
+              <pre style="width:100%"><div class="console">gcc -march=armv7-a -mfpu=vfpv4 -mfloat-abi=softfp -mthumb -O3 1.c -S -o 1.s</div></pre>
+              <pre><code class="armasm">applyHornerf:
+  flds  s15, [sp, #8]
+  fmsr  s11, r0
+  fmsr  s12, r1
+  flds  s14, [sp]
+  vfma.f32  s12, s11, s15
+  fmsr  s11, r2
+  flds  s13, [sp, #4]
+  vfma.f32  s11, s12, s15
+  fcpys s12, s11
+  fmsr  s11, r3
+  vfma.f32  s11, s12, s15
+  vfma.f32  s14, s11, s15
+  vfma.f32  s13, s14, s15
+  fmrs  r0, s13
+  bx  lr
+</code></pre>
+            </section>
+          </section>
+
+          <section>
+
+            <section>
+              <h2>Case study: floating point</h2>
+              <pre><code class="cpp">double power( double d, unsigned n)
+{
+  double x = 1.0;
+  for (unsigned j = 1; j&lt;=n; j++, x *= d) ;
+  return x;
+}
+int main ()
+{
+  double a = 1./0x80000000U, sum = 0.0;
+  for (unsigned i=1; i<= 0x80000000U; i++)
+    sum += power( i*a, i % 8);
+  printf ("sum = %g\n", sum);
+}</code></pre>
+              <small style="float:right;">
+                <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-dp-c">flags-dp.c</a>
+              </small>
+            </section>
+
+            <section>
+              <h2>Optimization levels</h2>
+              <ol style="width:90%">
+                <li>Compile it <b>without</b> optimization
+                  <pre class="console"><span>$ gcc -std=c99 -Wall -O0 flags-dp.c -o flags-dp
+  $ time ./flags-dp
+  sum = 7.29569e+08
+  real  0m24.550s</span></pre></li><br/>
+                <li>Compile it with <b>O1</b>: <b>~3.26 speedup</b>
+                  <pre class="console"><span>$ gcc -std=c99 -Wall -O1 flags-dp.c -o flags-dp
+  $ time ./flags-dp</code></strong>
+  sum = 7.29569e+08
+  real  0m7.529s</span></pre></li>
+              </ol>
+            </section>
+
+            <section>
+              <h2>Optimization levels</h2>
+              <ol start="3" style="width:90%">
+                <li>Compile it with <b>O2</b>: <b>~1.24 speedup</b>
+                  <pre class="console"><span>$ gcc -std=c99 -Wall -O2 flags-dp.c -o flags-dp
+  $ time ./flags-dp
+  sum = 7.29569e+08
+  real  0m6.069s</span></pre></li><br/>
+                <li>Compile it with <b>O3</b>:  <b>~1.00 speedup</b>
+                  <pre class="console"><span>$ gcc -std=c99 -Wall -O3 flags-dp.c -o flags-dp
+  $ time ./flags-dp</code></strong>
+  sum = 7.29569e+08
+  real  0m6.067s</span></pre></li>
+              </ol>
+              <p><b>Total speedup is ~4.05</b></p>
+            </section>
+
+          </section>
+
+          <section>
+              <section>
+                <h2>Case-study: integer</h2>
+                <pre><code class="cpp">int power( int d, unsigned n)
+{
+  int x = 1;
+  for (unsigned j = 1; j<=n; j++, x*=d) ;
+  return x;
+}
+int main ()
+{
+  int64_t sum = 0;
+  for (unsigned i=1; i&lt;0x80000000U; i++)
+    sum += power( i, i % 8);
+  printf ("sum = %ld\n", sum);
+}</code></pre>
+                <small style="float:right;">
+                  <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-c">flags.c</a>
+                </small>
+              </section>
+
+              <section>
+                <h2>Example: integer</h2>
+                <ol style="width:90%">
+                  <li>Compile it <b>without</b> optimization
+                    <pre class="console"><span>$ gcc -std=c99 -Wall -O0 flags.c -o flags
+    $ time ./flags
+    sum = 288231861405089791
+    real  0m18.750s</span></pre></li><br/>
+                  <li>Compile it with <b>O1</b>: <b>~2.64 speedup</b>
+                    <pre class="console"><span>$ gcc -std=c99 -Wall -O1 flag.c -o flags
+    $ time ./flags</code></strong>
+    sum = 288231861405089791
+    real  0m7.092s</span></pre></li>
+                </ol>
+              </section>
+
+              <section>
+                <h2>Example: integer</h2>
+                <ol start="3" style="width:90%">
+                  <li>Compile it with <b>O2</b>:<b>~0.97 speedup</b>
+                    <pre class="console"><span>$ gcc -std=c99 -Wall -O2 flags.c -o flags
+    $ time ./flags
+    sum = 288231861405089791
+    real  0m7.300s</span></pre></li><br/>
+                  <li>Compile it with <b>O3</b>:  <b>~1.00 speedup</b>
+                    <pre class="console"><span>$ gcc -std=c99 -Wall -O3 flags.c -o flags
+    $ time ./flags</code></strong>
+    sum = 288231861405089791
+    real  0m7.082s</span></pre></li>
+                </ol>
+                <h3>why there is no improvement?</h3>
+              </section>
+
+              <section>
+                <h2>Assembly</h2>
+                <table style="width:100%; font-size:0.8em;" class="simple">
+                  <colgroup>
+                    <col></col>
+                    <col></col>
+                    <col></col>
+                  </colgroup>
+                  <tbody>
+                    <tr>
+                      <td style="border-right: 3px double #F0E7D5;">Optimization level: -O1
+                        <pre style="width:100%"><code style="max-height:720px;" class="x86asm">  movl  $1, %r8d
+  movl  $0, %edx
+.L9:
+  movl  %r8d, %edi
+  movl  %r8d, %esi
+  andl  $7, %esi
+  je  .L10
+  movl  $1, %ecx
+  movl  $1, %eax
+.L8:                @
+  addl  $1, %eax    @
+  imull %edi, %ecx  @
+  cmpl  %eax, %esi  @
+  jae .L8
+  jmp .L7
+.L10:
+  movl  $1, %ecx
+.L7:
+  movslq  %ecx, %rcx
+  addq  %rcx, %rdx
+  addl  $1, %r8d
+  jns .L9
+  @ printing is here</code></pre>
+                    </td>
+                    <td>Optimization level: -O2
+                      <pre style="width:100%"><code class="x86asm">  movl    $1, %esi
+    movl    $1, %r8d
+    xorl    %edx, %edx
+    .p2align 4,,10
+    .p2align 3
+.L10:
+    movl    %r8d, %edi
+    andl    $7, %edi
+    je  .L11
+    movl    $1, %ecx
+    movl    $1, %eax
+    .p2align 4,,10
+    .p2align 3
+.L9:
+    addl    $1, %eax
+    imull   %esi, %ecx
+    cmpl    %eax, %edi
+    jae .L9
+    movslq  %ecx, %rcx</code></pre>
+                    </td>
+                    <td><br/>
+                      <pre style="width:100%"><code class="x86asm">.L8:
+    addl    $1, %r8d
+    addq    %rcx, %rdx
+    testl   %r8d, %r8d
+    movl    %r8d, %esi
+    jns .L10
+    subq    $8, %rsp
+    @ printing is here
+    ret
+.L11:
+    movl    $1, %ecx
+    jmp .L8</code></pre>
+                    <br>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <b>Compiler overdone with branch twiddling and alignment</b>
+            </section>
+
+          </section>
+
+          <section>
+            <h2>Helping a compiler</h2>
+            <blockquote style="width:100%">Compiler usually applies optimization to the inner loops. In this example number of iterations in the inner
+            loop depends on a value of an induction variable of the outer loop.</blockquote>
+            <p> Let's help the compiler (
+            <small style="vertical-align:middle;">
+              <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-dp-tuned-c">flags-dp-tuned.c</a>
+            </small>)</p>
+            <p><pre class="console"><span>$ gcc -std=c99 -Wall -O3 flags-dp-tuned.c -o flags-dp-tuned
+$ time ./flags-dp-tuned</code></strong>
+sum = 7.29569e+08
+real  0m2.448s</span></pre>
+            <b>Speedup is ~2.48x.</b>
+            </p>
+          </section>
+          <section>
+            <h2>Helping a compiler</h2>
+            <pre><code class="cpp">/*power function is not changed*/
+int main ()
+{
+  double a = 1./0x80000000U, s = -1.;
+  for (double i=0; i<=0x80000000U-8; i += 8)
+  {
+    s+=power((i+0)*a,0);s+=power((i+1)*a,1);
+    s+=power((i+2)*a,2);s+=power((i+3)*a,3);
+    s+=power((i+4)*a,4);s+=power((i+5)*a,5);
+    s+=power((i+6)*a,6);s+=power((i+7)*a,7);
+  }
+  printf ("sum = %g\n", s);
+}</code></pre>
+          </section>
+
+          <section>
+            <h2>Helping a compiler</h2>
+            <p>Let's try it for integers (
+              <small style="vertical-align:middle;">
+                <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-tuned-c">flags-tuned.c</a>
+              </small>)
+            </p>
+            <pre><code class="cpp">/*power function is not changed*/
+int main ()
+{
+  int64_t sum = -1;
+  for (unsigned i=0; i<=0x80000000U-8; i += 8)
+  {
+    sum+=power(i+0, 0); sum+=power(i+1,1);
+    sum+=power(i+2, 2); sum+=power(i+3,3);
+    sum+=power(i+4, 4); sum+=power(i+5,5);
+    sum+=power(i+6, 6); sum+=power(i+7,7);
+  }
+  printf ("sum = %ld\n", sum);
+}</code></pre>
+
+            <p><pre class="console"><span>$ gcc -std=c99 -Wall -O3 flags-tuned.c -o flags-tuned
+$ time ./flags-tuned</code></strong>
+sum = 288231861405089791
+real  0m1.286s</span></pre>
+            <b>Speedup is ~5.5x.</b>
+            </p>
+          </section>
+        </section>
+
+        <section>
+          <h1>How to learn optimization?</h1>
+        </section>
+
+        <section>
+          <h2>How to learn optimization?</h2>
+          <blockquote style="width:100%">Optimization is a <b>craft</b> rather than a <b>science</b>.</blockquote>
+          <dl>
+            <dt><b>Practice more</b></dt>
+            <dd>Do not make practical knowledge too theoretical</dd>
+            <dt><b>Look, what other people do</b></dt>
+            <dd>Find use-cases of different approaches and techniques</dd>
+            <dt><b>Dig into an architecture</b></dt>
+            <dd>Hardware evolves rapidly, hence today's devices obsolete in a wink. <strong>Comprehensive
+            knowledge helps to see beforehand</strong></dd>
+          </dl>
+        </section>
+
+        <section>
+          <h2>Knowledge which is required</h2>
+          <ol>
+            <li><b>The code</b>
+              <ul>
+                <li>The problem, it solves</li>
+                <li>The algorithm, it implements</li>
+                <li>The algorithmic complexity</li>
+              </ul>
+            </li>
+            <li><b>The compiler</b>
+              <ul>
+                <li>Compilation trajectory</li>
+                <li>Compiler's capabilities and obstacles</li>
+              </ul>
+            </li>
+            <li><b>The platform</b>
+              <ul>
+                <li>Architecture capabilities
+                  <ul>I<small style="vertical-align: bottom">nstruction</small>
+                      S<small style="vertical-align: bottom">et</small>
+                      A<small style="vertical-align: bottom">rchitecture</small></ul>
+                </li>
+                <li>Micro-architecture specifics</li>
+              </ul>
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <section>
+            <h2>Recommended literature</h2>
+            <img width="30%" src="images/popt/hp.jpg">
+            <p>
+              <a href="http://www.amazon.com/Computer-Architecture-Fifth-Quantitative-Approach/dp/012383872X/ref=asap_bc?ie=UTF8">
+                Computer Architecture, Fifth Edition:<br>A Quantitative Approach</a><br/>by
+              <a href="http://www.computerhistory.org/fellowawards/hall/bios/John,Hennessy/">John L. Hennessy</a>
+              and
+              <a href="https://www.eecs.berkeley.edu/Faculty/Homepages/patterson.html">David A. Patterson.</a>
+            </p>
+          </section>
+
+          <section>
+            <h2>Recommended literature</h2>
+            <img src="images/popt/moh.jpg">
+            <p>
+              <a href="http://carlos.bueno.org/optimization/mature-optimization.pdf">The Mature Optimization Handbook</a><br>
+              by <a href="http://carlos.bueno.org/about.html">Carlos Bueno</a>
+            </p>
+          </section>
+
+          <section>
+            <h2>Recommended literature</h2>
+            <img width="30%" src="images/popt/pm.jpg">
+            <p><a href="https://www.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook-1c.2015.01.31a.pdf">
+              Is Parallel Programming Hard, And, If So,<br> What Can You Do About It?</a><br/> by
+              <a href="http://www.rdrop.com/~paulmck/">Paul E. McKenney</a>
+            </p>
+          </section>
+
+          <section>
+              <h2>Recommended literature</h2>
+              <img width="30%" src="images/popt/ec.jpg">
+              <p><a href="http://www.amazon.com/Engineering-Compiler-Second-Edition-Cooper/dp/012088478X">
+              Engineering a Compiler</a><br/> by
+              <a href="http://www.cs.rice.edu/~keith/">Keith Cooper</a> and <a href="http://www.cs.rice.edu/~linda/">Linda Torczon</a>
+            </p>
+          </section>
+        </section>
+
+        <section>
+          <h2>Summary</h2>
+          <ul>
+            <li>Compiler will detect <code>memcpy</code> and <code>memset</code>, even if you implement them manually,
+            and call library function instead. Library functions are usually more efficient.</li>
+            <li><code>__restrict</code> and <code>__builtin_assume_aligned</code> keywords only eliminate some loop
+            versioning.</li>
+
+            <li>For typical constructs a compiler usually does better job.</li>
+            <li>Most hand-written pointer optimizations do not make sense with usage of optimization levels higher than O0.</li>
+            <li>Functional body inlining enables all other optimizations.</li>
+
+            <li>Hoisting loop invariant code, unswitching and unrolling are the most common loop-targeted optimizations</li>
+            <li>Compiler optimization is a multi-phase iterative process</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Summary</h2>
+          <ul>
+            <li>Knowledge about the code, the compiler and the platform is a must-have.</li>
+            <li>The main task of an optimizer is finding the bottleneck.</li>
+            <li>Optimizer's mastership is to know where to stop.</li>
+            <li>Stick to the high-to-low approach.</li>
+            <li>Practice, look what others do, dig into an architecture.</li>
+            <li>Express your intentions to the compiler clearly.</li>
+
+            <li>Learn a compiler.</li>
+            <li>A compiler is not aware of your program semantics.</li>
+            <li><b>Write pure code!</b></li>
+          </ul>
+        </section>
+
+        <section>
+          <h1>THE END</h1>
+          <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2016</h4>
+        </section>
+
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        width: 960,
+        height: 720,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        slideNumber: true,
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true },
+          { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
