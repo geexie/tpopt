@@ -43,18 +43,45 @@
         </section>
 
         <section>
+          <h2>Course Topics</h2>
+          <ul>
+            <li><strong>Pragmatics</strong>
+              <ul>
+                <li><b>Ordering optimization approaches</b></li>
+                <li>Demystifying a compiler</li>
+                <li style="margin-bottom: 20px;">Mastering compiler optimizations</li>
+              </ul>
+            </li>
+<!--             <li><strong>Computer Architectures</strong>
+              <ul>
+                <li>Modern architecture families</li>
+                <li>Cache organization</li>
+                <li style="margin-bottom: 20px;">Instruction scheduling</li>
+              </ul>
+            </li> -->
+<!--             <li><strong>Advanced capabilities</strong>
+              <ul>
+                <li>SIMD extensions</li>
+                <li>Specific co-processors</li>
+              </ul>
+            </li> -->
+          </ul>
+        </section>
+
+        <section>
           <h2>Outline</h2>
           <ul>
             <li>What is optimization?</li>
+            <li>Pragmatic approach</li>
+            <li>Optimization trade-offs</li>
+            <li>Knowledge which is required</li>
+            <li>Where to get the performance?</li>
+            <li>Optimization cycle</li>
+            <li>Top-Down (High-low) approach</li>
+            <li>Optimization cycle (revised)</li>
+            <li>Optimization steps overview</li>
             <li>How to learn optimization?</li>
             <li>Recommended literature</li>
-            <li>Pragmatic approach</li>
-            <li>Knowledge which is required</li>
-            <li>Optimization cycle</li>
-            <li>Where to get the performance?</li>
-            <li>Top-Down (High-low) approach</li>
-            <li>Optimization trade-offs</li>
-            <li>Overview of optimization steps</li>
             <li>Summary</li>
           </ul>
         </section>
@@ -62,24 +89,496 @@
         <section>
           <h2>What is optimization?</h2>
           <blockquote>In computing, <b>optimization</b> is a process of modifying a system to make some aspect of it
-            work more efficiently or use fewer resources. In particular, this is a process of transforming a piece
-            of code to make it <b>more efficient without changing its output</b>.
-          </blockquote>
+          to work more efficiently or use fewer resources, in particular, a process of transforming a piece of code
+          to make it <b>more efficient without changing its output</b>.</blockquote>
         </section>
 
         <section>
-          <h2>Commonly considered metrics</h2>
-          <dl>
-            <dt>Wall(-clock) time</dt>
-            <dd>
-              <strong>is a human perception of the span of time from the start to the completion of a task.</strong>
-            </dd>
-            <dt>Power consumption</dt>
-            <dd>is the electrical energy which is consumed to complete a task.</dd>
-            <dt>Processor time (or runtime)</dt>
-            <dd>is the total execution time during which a processor was dedicated
-            to a task (i.e. executes instructions of that task).</dd>
-          </dl>
+          <h2>Pragmatic approach</h2>
+          <blockquote>
+          &ldquo;Programmers waste enormous amounts of time thinking about, or worrying about, the speed of non-critical
+          parts of their programs, and these attempts at efficiency actually have a strong negative impact when
+          debugging and maintenance are considered. We should forget about small inefficiencies, say about 97% of the time;
+          <b>premature optimization is the root of all evil</b>. Yet we should not pass up our opportunities in
+          that critical 3%.&ldquo;
+            <div style="text-align:right;">
+              <small>-Donald Knuth, Structured Programming With go to Statements</small>
+            </div>
+          </blockquote>
+          <ol style="width: 50%">
+            <li><b>Find what to start from (3%)</b></li>
+            <li><b>Know when to stop (97%)</b></li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>Optimization trade-offs</h2>
+          <ul>
+            <li>Code portability decreases when we go deeper</li>
+            <li>Performance portability decreases when we go deeper</li>
+            <li>The cost of maintenance &amp; extensibility increases when we go deeper</li>
+            <li>Optimizations are often not reusable</li>
+            <li>Optimizations become obsolete very quickly</li>
+          </ul>
+          <p><strong>...but still performance is a crucial requirement for most applications.</strong></p>
+        </section>
+
+        <section>
+          <h2>Knowledge which is required</h2>
+          <ol>
+            <li><b>The code</b>
+              <ul>
+                <li>The problem, it solves</li>
+                <li>The algorithm, it implements</li>
+                <li>The algorithmic complexity</li>
+              </ul>
+            </li>
+            <li><b>The compiler</b>
+              <ul>
+                <li>Compilation trajectory</li>
+                <li>Compiler's capabilities and obstacles</li>
+              </ul>
+            </li>
+            <li><b>The platform</b>
+              <ul>
+                <li>Architecture capabilities
+                  <ul>I<small style="vertical-align: bottom">nstruction</small>
+                      S<small style="vertical-align: bottom">et</small>
+                      A<small style="vertical-align: bottom">rchitecture</small></ul>
+                </li>
+                <li>Micro-architecture specifics</li>
+              </ul>
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>Where to get the performance?</h2>
+          <br/><br/>
+          <table style="font-size:2em;">
+            <colgroup>
+              <col></col>
+              <col></col>
+            </colgroup>
+            <tbody>
+              <tr>
+                <td style="padding:0.1em; padding-right: 1em; text-align: right;">High-level</td>
+                <td style="padding:0.1em;">Programmer</td>
+              </tr>
+              <tr>
+                <td style="padding:0.1em; padding-right: 1em; text-align: right;">Middle-level</td>
+                <td style="padding:0.1em;">Compiler</td>
+              </tr>
+              <tr>
+                <td style="padding:0.1em; padding-right: 1em; text-align: right;">Low-level</td>
+                <td style="padding:0.1em;">Hardware</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>Optimization cycle</h2>
+          <img class="simple" src="images/popt/opt_cycle.svg"/>
+        </section>
+
+        <section>
+          <h2>Top-Down (High-low) approach</h2>
+          <ol style="width: 60%">
+            <li>Understand the code</li>
+            <li>Use appropriate algorithms</li>
+            <br/>
+            <li>Optimize memory access patterns</li>
+            <li>Minimize number of operations</li>
+            <br/>
+            <li>Shrink the critical path</li>
+            <li>Perform HW-specific optimizations</li>
+            <br/>
+            <li>Dive into assembly</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>Optimization cycle (revised)</h2>
+          <img class="simple" src="images/popt/opt_cycl_reviced.svg"/>
+        </section>
+
+        <section>
+          <h2>step #1: Understand the code</h2>
+          <ul>
+            <li>Different people think differently
+              <ul>
+                <li>you'll need some time to get used to the code</li>
+              </ul>
+            </li><br/>
+            <li><b>Understand dataflow</b>
+              <ul>
+                <li>input/output parameters</li>
+                <li>data dependencies</li>
+              </ul>
+            </li><br/>
+            <li><b>Identify performance limiters</b>
+              <ul>
+                <li>Time</li>
+                <li>Profile</li>
+                <li>Collect metrics (e.g. power consumption)</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <section>
+            <h2>Step #2: use appropriate algorithm</h2>
+            <ul>
+              <li>Consider and lower big O complexity
+            <img width="50%" src="images/popt/Big-O-Time-Complexity-Chart.png"/></li>
+              <li>Choose data structures wisely</li>
+              <li>Look for optimized libraries</li>
+              <li>Find opportunities to scalarize &amp; parallelize</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Step #2: use appropriate algorithm</h2>
+            <p>Compilers are not aware of semantics of code, taking this into account <b>focus
+            on an algorithmic aspect first.</b></p>
+            <ul>
+              <li>Decrease big-O complexity</li>
+              <li>Use optimized libraries for subroutines</li>
+              <li>Restructure the code to use fewer resources</li>
+              <li>Split problem on subtasks, organize them wisely</li>
+              <li>Parallelize</li>
+            </ul>
+
+            <p>What if you need to sort 100 Mb of numerical data...</p>
+            <h3>What sorting algorithm would you choose?</h3>
+
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Step #3: optimize memory accesses</h2>
+            <blockquote>You will be surprised to see<br/>how many algorithms are memory bound</blockquote>
+            <p>Optimization for memory usually involves:</p>
+            <dl>
+              <dt><b>Data restructuring</b></dt>
+              <ul>
+                <li>to load only data that is really needed for computations.</li>
+              </ul>
+              <dt><b>Data packaging</b></dt>
+                <ul>
+                  <li>to shrink the data in size</li>
+                </ul>
+              </dd>
+              <dt><b>Loop transformations</b></dt>
+              <ul>
+                <li>to walk through the data in a more efficient way,</li>
+                <li>to increase temporal &amp; spacial locality,</li>
+                <li>to perform cache-aware optimization</li>
+              </ul>
+            </dl>
+          </section>
+
+          <section>
+            <h2>Step #3: optimize memory accesses</h2>
+            <p>Compilers are quite good at local optimization, such as</p>
+            <ul>
+              <li>loop bodies transformations,</li>
+              <li>local functions inlining,</li>
+              <li>arithmetic expressions simplification</li>
+            </ul>
+            <p>so <b>help a compiler rather than try to outfox it.</b></p>
+            <p>Work cohesively with it on</p>
+            <ul>
+              <li>enabling auto-vectorization,</li>
+              <li>optimizing critical loops,</li>
+              <li>vectorizing.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Step #3: optimize memory accesses</h2>
+            <p><pre><code class="cpp" style="font-size: 1.5em; line-height: 1.2em;">for (int j = 0; j &lt; height; j++)
+  for (int i = 0; i &lt; width; i++)
+    if (img[j * width + i] &gt; 0)
+      count++;</code></pre></p>
+            <p><pre><code class="cpp" style="font-size: 1.5em; line-height: 1.2em;">for (int i = 0; i &lt; width; i++)
+  for (int j = 0; j &lt; height; j++)
+    if (img[j * width + i] &gt; 0)
+      count++;</code></pre></p>
+            <h3>Which is more optimal for conventional CPU processor?</h3>
+          </section>
+          <section>
+            <h2>Step #3: optimize memory accesses</h2>
+            <p><pre style="border: 3px double #FF8D14;"><code class="cpp" style="font-size: 1.5em; line-height: 1.2em;">for (int j = 0; j &lt; height; j++)
+  for (int i = 0; i &lt; width; i++)
+    if (img[j * width + i] &gt; 0)
+      count++;</code></pre></p>
+             <p><pre><code class="cpp" style="font-size: 1.5em; line-height: 1.2em;">for (int i = 0; i &lt; width; i++)
+  for (int j = 0; j &lt; height; j++)
+    if (img[j * width + i] &gt; 0)
+      count++;</code></pre></p>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Step #4: minimize number of operations</h2>
+            <blockquote>Reducing a program in the number of operations<br>
+            doesn't necessarily decrease its runtime,<br>
+            but it's a good heuristic, though.</blockquote>
+            The compiler usually helps a lot here:
+            <table class="simple">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="50%">
+                    <b>Machine-independent optimizations</b>
+                    <ul>
+                      <li>C<small style="vertical-align: bottom">ommon</small>
+                          S<small style="vertical-align: bottom">ub-expression</small>
+                          E<small style="vertical-align: bottom">limination</small></li>
+                      <li>Constant propagation</li>
+                      <li>Redundancy elimination</li>
+                      <li>..</li>
+                    </ul>
+                  </td>
+                  <td>
+                    <b>Machine-dependent optimizations</b>
+                    <ul>
+                      <li>Register allocation</li>
+                      <li>Instruction selectIon</li>
+                      <li>Instruction scheduling</li>
+                      <li>Peephole optimization</li>
+                      <li>..</li>
+                    </ul>
+                  </td>
+              </tbody>
+            </table>
+          </section>
+
+          <section>
+            <h2>Step #4: minimize number of operations</h2>
+            <pre><code class="cpp">float pows(float a,float b,float c, float d, float e, float f, float x)
+{
+  return
+      a * powf(x, 5.f) +
+      b * powf(x, 4.f) +
+      c * powf(x, 3.f) +
+      d * powf(x, 2.f) +
+      e * x            + f;
+}</code></pre>
+            <div class="console">gcc -march=armv7-a -mfpu=neon-vfpv4 -mthumb -mfloat-abi=softfp -O3 1.c -S -o 1.s</div>
+          </section>
+          <section>
+            <h2>Step #4: minimize number of operations</h2>
+            <table class="simple" style="width: 100%;">
+              <colgroup>
+                <col></col>
+                <col></col>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="50%">
+                    <pre><code class="armasm">pows:
+  push  {r3, lr}
+  flds  s17, [sp, #56]
+  fmsr  s24, r1
+  movs  r1, #0
+  fmsr  s22, r0
+  movt  r1, 16544
+  fmrs  r0, s17
+  fmsr  s21, r2
+  fmsr  s20, r3
+  flds  s19, [sp, #48]
+  flds  s18, [sp, #52]
+  bl  powf(PLT)
+  mov r1, #1082130432
+  fmsr  s23, r0
+  fmrs  r0, s17
+  bl  powf(PLT)
+</code></pre>
+                  </td>
+                  <td width="50%">
+                    <pre><code class="armasm">  movs  r1, #0
+  movt  r1, 16448
+  fmsr  s16, r0
+  fmrs  r0, s17
+  bl  powf(PLT)
+  fmuls s16, s16, s24
+  vfma.f32  s16, s23, s22
+  fmsr  s15, r0
+  vfma.f32  s16, s15, s21
+  fmuls s15, s17, s17
+  vfma.f32  s16, s20, s15
+  vfma.f32  s16, s19, s17
+  fadds s15, s16, s18
+  fldmfdd sp!, {d8-d12}
+  fmrs  r0, s15
+  pop {r3, pc}</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            ... Let's apply Horner rule.
+          </section>
+
+          <section>
+            <h2>Step #4: minimize number of operations</h2>
+
+            <pre><code class="cpp">float horner(float a, float b, float c, float d, float e, float f, float x)
+{
+  return ((((a * x + b) * x + c) * x + d) * x + e) * x + f;
+}</code></pre>
+            <pre><code class="armasm">horner:
+  flds  s15, [sp, #8]
+  fmsr  s11, r0
+  fmsr  s12, r1
+  flds  s14, [sp]
+  vfma.f32  s12, s11, s15
+  fmsr  s11, r2
+  flds  s13, [sp, #4]
+  vfma.f32  s11, s12, s15
+  fcpys s12, s11
+  fmsr  s11, r3
+  vfma.f32  s11, s12, s15
+  vfma.f32  s14, s11, s15
+  vfma.f32  s13, s14, s15
+  fmrs  r0, s13
+  bx  lr</code></pre>
+          </section>
+          <section>
+            <h2>Step #4: minimize number of operations</h2>
+            <p>Unfortunately, sometimes a compiler fails some optimization steps (e.g. register allocation, scalarization)
+            and harms the performance by
+            introducing redundant operations.</p>
+            <p><blockquote><strong>Starting from this optimization step it is worth to <b>look at the assembly code</b> to check
+             whether the compiler is actually automating a particular optimization.</strong></blockquote></p>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Step #5: shrink the critical path</h2>
+            <blockquote><strong>Critical path</strong> is <b>the longest</b> sequence of operations in a code block
+              that must be completed <b>in order</b>, which is usually caused by dependencies between steps or operations.</dd>
+            </blockquote>
+            <ul>
+              <li>The critical path of a code block is hardly deducible from high-level code and requires assembly inspection.</li>
+              <li>Knowledge about architecture capabilities is required to estimate critical path more precisely.</li>
+              <li>Some profilers are able to do critical path analysis.</li>
+              <li>The term could also refer to the longest sequence of dependent steps in a pipeline that limits its parallelization.</li>
+              <li>Control-flow diagram is used to finding the critical path.</li>
+            </ul>
+          </section>
+          <section>
+            <h2>Step #5: shrink the critical path</h2>
+            <p>Let's look at the critical path of the following code block.</p>
+            <p><pre><code class="cpp">const uint8_t* p0 = src.ptr(row0);
+const uint8_t* p1 = src.ptr(row1);
+uint8_t* dptr = dst.ptr(row);
+
+for (int col = 0; col < cols; ++col)
+{
+  dptr[col] = (p0[col*2]+p0[col*2+1]
+             + p1[col*2]+p1[col*2+1]+2)&gt;&gt;2;
+}</code></pre></p>
+            <h3>What is the critical path of this code line?</h3>
+          </section>
+          <section>
+            <h2>Step #5: shrink the critical path</h2>
+            <p>Let's create 3-positional representation of the code block</p>
+            <pre><code class="cpp">r0 = col*2           //  1
+r1 = r0+1            //  2
+r2 = load(sptr0, r0) //  3
+r3 = load(sptr0, r1) //  4
+r4 = load(sptr1, r0) //  5
+r5 = load(sptr1, r1) //  6
+r6 = r2+r3           //  7
+r7 = r6+r4           //  8
+r8 = r7+r5           //  9
+r9 = r8+2            // 10
+r10 = shl(r9, 2)     // 11</code></pre>
+            <h3>11 ?</h3>
+            <p>Let's construct the dependency graph...</p>
+          </section>
+          <section>
+            <h2>Step #5: shrink the critical path</h2>
+            <img width="70%" class="simple" src="images/popt/path.svg"/>
+            <h3 style="margin-bottom: 0px;">8 ?</h3>
+          </section>
+          <section>
+            <h2>Step #5: shrink the critical path</h2>
+            But, the compiler reorders instructions <br> since integer math is associative
+            <img width="70%" class="simple" src="images/popt/path2.svg"/>
+            <h3 style="margin-bottom: 0px;">6 ?</h3>
+          </section>
+          <section>
+            <h2>Step #5: shrink the critical path</h2>
+            And let's assume that hardware schedules<br> 1 arithmetic and 1 memory operation per clock.
+            <img width="48%" class="simple" src="images/popt/path3.svg"/>
+            <h3 style="margin-bottom: 0px;">and back to 8 again</h3>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Step #6: do HW-specific optimization</h2>
+            <p>It requires comprehensive understanding of the target HW,<br/> which usually goes beyond compiler's abilities</p>
+            <ul>
+              <li>Using special hardware capabilities</li>
+              <li>Overcoming micro-architecture weakness</li>
+              <li>Using instructions, which are specific for concrete HW</li>
+              <li>balancing usage of different instruction types</li>
+            </ul>
+            <br/>
+            <p>A classical example here is a question of <strong>recomputing temporal v.s. getting it from the memory</strong>.</p>
+          </section>
+
+          <section>
+            <h2>Step #6: do HW-specific optimization</h2>
+            <p>Modern hardware is quite advanced,</p>
+            <ul>
+              <li>deep pipelines,</li>
+              <li>out-of-order execution,</li>
+              <li>sophisticated branch prediction,</li>
+              <li>multi-level memory hierarchies,</li>
+              <li>processor specialization.</li>
+            </ul><br>
+            <p>so <b>utilize unique properties of the hardware</b>.</p>
+            <p>Peephole optimization is not as important<br> as used to be 10 years ago.</p>
+          </section>
+        </section>
+
+        <section>
+          <h2>Step #7: dive into assembly</h2>
+          <blockquote><b>Assembler is a must-have to check the compiler</b><br>
+           but it is rarely used to write low-level code.</blockquote>
+          <strong>Raw assembly make sense to:</strong>
+          <ul>
+            <li><b>Overcome compiler bugs & optimization limitations</b>
+              <ul>
+                <li>addition of redundant instructions</li>
+                <li>suboptimal register allocation</li>
+              </ul>
+            </li>
+            <li><b>Use specific hardware features</b>
+              <ul>
+                <li>which are not expressed in higher level ISA</li>
+              </ul>
+            </li>
+          </ul>
+          <br>
+          <strong>Keep in mind that:</strong>
+          <ul>
+            <li>Assembly writing is the least portable optimization</li>
+            <li>In-line assembly limits compiler optimizations</li>
+          </ul>
         </section>
 
         <section>
@@ -137,135 +636,28 @@
           </section>
         </section>
 
-            <section>
-              <section>
-                <h2>Vertical Slides</h2>
-                <p>Slides can be nested inside of each other.</p>
-                <p>Use the <em>Space</em> key to navigate through all slides.</p>
-                <br>
-                <a href="#" class="navigate-down">
-                  <img width="178" height="238" data-src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-                </a>
-              </section>
-              <section>
-                <h2>Basement Level 1</h2>
-                <p>Nested slides are useful for adding additional detail underneath a high level horizontal slide.</p>
-              </section>
-              <section>
-                <h2>Basement Level 2</h2>
-                <p>That's it, time to go back up.</p>
-                <br>
-                <a href="#/2">
-                  <img width="178" height="238" data-src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="transform: rotate(180deg); -webkit-transform: rotate(180deg);">
-                </a>
-              </section>
-            </section>
-
-<!--                 <section>
-                    <section id="fragments">
-                        <h2>Fragments</h2>
-                        <p>Hit the next arrow...</p>
-                        <p class="fragment">... to step through ...</p>
-                        <p><span class="fragment">... a</span> <span class="fragment">fragmented</span> <span class="fragment">slide.</span></p>
-
-                        <aside class="notes">
-                            This slide has fragments which are also stepped through in the notes window.
-                        </aside>
-                    </section>
-                    <section>
-                        <h2>Fragment Styles</h2>
-                        <p>There's different types of fragments, like:</p>
-                        <p class="fragment grow">grow</p>
-                        <p class="fragment shrink">shrink</p>
-                        <p class="fragment fade-out">fade-out</p>
-                        <p class="fragment current-visible">current-visible</p>
-                        <p class="fragment highlight-red">highlight-red</p>
-                        <p class="fragment highlight-blue">highlight-blue</p>
-                    </section>
-                  </section> -->
-
-                  <section data-transition="slide" data-background="#b5533c" data-background-transition="zoom">
-                    <h2>Background Transitions</h2>
-                    <p>
-                      You can override background transitions per-slide.
-                    </p>
-                    <pre><code class="hljs" style="word-wrap: break-word;">&lt;section data-background-transition="zoom"&gt;</code></pre>
-                  </section>
-
-                  <section>
-                    <h2>Pretty Code</h2>
-                    <pre><code class="hljs" data-trim contenteditable>
-                      function linkify( selector ) {
-                      if( supports3DTransforms ) {
-
-                      var nodes = document.querySelectorAll( selector );
-
-                      for( var i = 0, len = nodes.length; i &lt; len; i++ ) {
-                      var node = nodes[i];
-
-                      if( !node.className ) {
-                      node.className += ' roll';
-                    }
-                  }
-                }
-              }
-            </code></pre>
-            <p>Code syntax highlighting courtesy of <a href="http://softwaremaniacs.org/soft/highlight/en/description/">highlight.js</a>.</p>
-          </section>
-
-          <section>
-            <h2>Intergalactic Interconnections</h2>
-            <p>
-              You can link between slides internally,
-              <a href="#/2/3">like this</a>.
-            </p>
-            <aside class="notes">
-              Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard). Press B or . on your keyboard to pause the presentation. This is helpful when you're on stage and want to take distracting slides off the screen.
-            </aside>
-          </section>
-
-          <section>
-            <h2>Global State</h2>
-            <p>
-              Set <code>data-state="something"</code> on a slide and <code>"something"</code>
-              will be added as a class to the document element when the slide is open. This lets you
-              apply broader style changes, like switching the page background.
-            </p>
-          </section>
-
-          <section data-state="customevent">
-            <h2>State Events</h2>
-            <p>
-              Additionally custom events can be triggered on a per slide basis by binding to the <code>data-state</code> name.
-            </p>
-            <pre><code class="javascript" data-trim contenteditable style="font-size: 18px;">
-              Reveal.addEventListener( 'customevent', function() {
-              console.log( '"customevent" has fired' );
-            } );
-          </code></pre>
-        </section>
-
         <section>
-          <h2>Much more</h2>
+          <h2>Summary</h2>
           <ul>
-            <li>Right-to-left support</li>
-            <li><a href="https://github.com/hakimel/reveal.js#api">Extensive JavaScript API</a></li>
-            <li><a href="https://github.com/hakimel/reveal.js#auto-sliding">Auto-progression</a></li>
-            <li><a href="https://github.com/hakimel/reveal.js#parallax-background">Parallax backgrounds</a></li>
-            <li><a href="https://github.com/hakimel/reveal.js#keyboard-bindings">Custom keyboard bindings</a></li>
+            <li>Practice, look what others do and dig into an architecture.</li>
+            <li>The main task of an optimizer is finding the critical part.</li>
+            <li>Optimizer's mastership is to know where to stop.</li>
+            <li>Knowledge about the code, the compiler and the platform is a must-have.</li>
+            <li>Optimization is a measure-analyze-optimize-check cycle.</li>
+            <li>Stick to the high-to-low approach.</li>
+            <li>Get the performance from algorithmic and data structure choices first,</li>
+            <li>... ensure memory access patterns next,</li>
+            <li>... then go deeper.</li>
           </ul>
         </section>
 
-        <section style="text-align: left;">
+        <section>
           <h1>THE END</h1>
-          <p>
-            - <a href="http://slides.com">Try the online editor</a> <br>
-            - <a href="https://github.com/hakimel/reveal.js">Source code &amp; documentation</a>
-          </p>
+          <img class="simple" src="images/popt/infinity.png">
+          <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015-2016</h4s>
         </section>
 
       </div>
-
     </div>
 
     <script src="lib/js/head.min.js"></script>

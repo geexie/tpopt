@@ -16,6 +16,10 @@ body {
   color: #FF8D14;
 }
 
+.reveal b, b {
+  color: #FF8D14;
+}
+
 .reveal h1 {
   text-shadow: 0 1px 0 #b5533c, 0 2px 0 #b5533c, 0 3px 0 #b5533c,
                0 4px 0 #b5533c, 0 5px 0 #b5533c, 0 6px 1px
@@ -35,6 +39,17 @@ body {
   width: 95%;
 }
 
+.reveal pre {
+  width: 95%;
+}
+
+
+.reveal .console {
+  font-family:Courier;
+  color: #CCCCCC;
+  background: #000000;
+}
+
 .reveal dt {
   font-weight: bold;
   color: #FF8D14;
@@ -42,6 +57,22 @@ body {
 
 .reveal dd {
   padding-bottom: 20px;
+}
+
+.reveal ul, .reveal ol {
+  display: inline-block;
+}
+
+.reveal section img.simple {
+  margin: 15px 0px;
+  background: none;
+  border: none;
+  box-shadow: none;
+  display: inline-block;
+}
+
+.reveal table {
+  width: 100%;
 }
 
 /***********************

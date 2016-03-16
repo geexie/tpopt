@@ -37,152 +37,792 @@
         <![endif]-->
     </head>
 
-    <body>
-        <div class="reveal">
-            <div class="slides">
-                <section>
-                    <h1>Pragmatic optimization</h1>
-                    <h2>In modern programming</h2>
-                    <span>
-                      <a href="">Ordering optimization approaches</a>,<br>
-                      <a href="">Demystifying a compiler</a>,<br>
-                      <a href="">Mastering compiler optimizations</a>
-                    </span>
-                    <p>
-                        <small>Created by <a href="https://github.com/cuda-geek">Marina (geek) Kolpakova</a> / 2015-2016</small>
-                    </p>
-                </section>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h1>Pragmatic optimization</h1>
+          <h2>In modern programming</h2>
+          <h3>Mastering compiler optimizations</h3>
+          <p>
+            <small>Created by
+              <a href="https://github.com/cuda-geek">Marina (geek) Kolpakova</a>
+              for
+              <a href="unn.ru">UNN</a>
+              / 2015-2016
+            </small>
+          </p>
+        </section>
 
-                <!-- Example of nested vertical slides -->
-                <section>
-                    <section>
-                        <h2>Vertical Slides</h2>
-                        <p>Slides can be nested inside of each other.</p>
-                        <p>Use the <em>Space</em> key to navigate through all slides.</p>
-                        <br>
-                        <a href="#" class="navigate-down">
-                            <img width="178" height="238" data-src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-                        </a>
-                    </section>
-                    <section>
-                        <h2>Basement Level 1</h2>
-                        <p>Nested slides are useful for adding additional detail underneath a high level horizontal slide.</p>
-                    </section>
-                    <section>
-                        <h2>Basement Level 2</h2>
-                        <p>That's it, time to go back up.</p>
-                        <br>
-                        <a href="#/2">
-                            <img width="178" height="238" data-src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="transform: rotate(180deg); -webkit-transform: rotate(180deg);">
-                        </a>
-                    </section>
-                </section>
+        <section>
+          <h2>Course Topics</h2>
+          <ul>
+            <li><strong>Pragmatics</strong>
+              <ul>
+                <li><b>Ordering optimization approaches</b></li>
+                <li>Demystifying a compiler</li>
+                <li style="margin-bottom: 20px;">Mastering compiler optimizations</li>
+              </ul>
+            </li>
+<!--             <li><strong>Computer Architectures</strong>
+              <ul>
+                <li>Modern architecture families</li>
+                <li>Cache organization</li>
+                <li style="margin-bottom: 20px;">Instruction scheduling</li>
+              </ul>
+            </li> -->
+<!--             <li><strong>Advanced capabilities</strong>
+              <ul>
+                <li>SIMD extensions</li>
+                <li>Specific co-processors</li>
+              </ul>
+            </li> -->
+          </ul>
+        </section>
 
-<!--                 <section>
-                    <section id="fragments">
-                        <h2>Fragments</h2>
-                        <p>Hit the next arrow...</p>
-                        <p class="fragment">... to step through ...</p>
-                        <p><span class="fragment">... a</span> <span class="fragment">fragmented</span> <span class="fragment">slide.</span></p>
+        <section>
+          <h2>Outline</h2>
+          <ul>
+            <li></li>
+          </ul>
+        </section>
 
-                        <aside class="notes">
-                            This slide has fragments which are also stepped through in the notes window.
-                        </aside>
-                    </section>
-                    <section>
-                        <h2>Fragment Styles</h2>
-                        <p>There's different types of fragments, like:</p>
-                        <p class="fragment grow">grow</p>
-                        <p class="fragment shrink">shrink</p>
-                        <p class="fragment fade-out">fade-out</p>
-                        <p class="fragment current-visible">current-visible</p>
-                        <p class="fragment highlight-red">highlight-red</p>
-                        <p class="fragment highlight-blue">highlight-blue</p>
-                    </section>
-                </section> -->
+        <section>
+          <section>
+            <h2>Strength Reduction</h2>
+            <blockquote>replaces complex expressions with a simpler analogy</blockquote>
+            <table>
+              <colgroup>
+                <col width="50%"/>
+                <col width="50%"/>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre style="font-size: 0.80em;"><code class="cpp" data-trim data-noescape>double usePow(double x)
+{
+  return pow(x, 2.);
+}</code></pre>
+                  </td>
+                  <td>
+                    <pre style="font-size: 0.80em;"><code class="cpp" data-trim data-noescape>float usePowf(float x)
+{
+  return powf(x, 2.f);
+}</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>
+              <strong>Machine-independent transformation in most cases.</strong><br>
+              It may be machine-dependent in case if it relies on a specific feature set,
+              implemented in the HW (e.g. <i>built-in detection</i>)
+            </p>
+          </section>
 
-                <section data-transition="slide" data-background="#b5533c" data-background-transition="zoom">
-                    <h2>Background Transitions</h2>
-                    <p>
-                        You can override background transitions per-slide.
-                    </p>
-                    <pre><code class="hljs" style="word-wrap: break-word;">&lt;section data-background-transition="zoom"&gt;</code></pre>
-                </section>
+          <section>
+            <h2>Strength Reduction</h2>
+            <pre style="font-size: 0.95em;" class="console"><span>$ gcc -march=armv7-a -mthumb -O3 -S -o 1.s \
+> -mfpu=neon-vfpv4 -mfloat-abi=softfp 1.c</span></pre></li>
+            <table>
+              <colgroup>
+                <col width="50%"/>
+                <col width="50%"/>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre style="font-size: 0.9em;"><code class="armasm" data-trim data-noescape>usePow:
+ <abbr title="Puts a pair of integer registers (that holds function parameters) into one double precision register">fmdrr</abbr> d16, r0, r1
+ <abbr title="Double precision multiply">fmuld</abbr> d16, d16, d16
+ <abbr title="Puts one double precision register into a pair of integer registers (to pass function result)">fmrrd</abbr> r0, r1, d16
+ <abbr title="Branch to the link register == subroutine return">bx</abbr>  lr
+</code></pre>
+                  </td>
+                  <td>
+                    <pre style="font-size: 0.9em;"><code class="armasm" data-trim data-noescape>usePowf:
+ fmsr  s15, r0
+ fmuls s15, s15, s15
+ fmrs  r0, s15
+ bx  lr</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>Usually it is performed in a local scope<br> for a dependency chain.</p>
+          </section>
 
-                <section>
-                    <h2>Pretty Code</h2>
-                    <pre><code class="hljs" data-trim contenteditable>
-function linkify( selector ) {
-  if( supports3DTransforms ) {
+          <section>
+            <h2>Strength Reduction (advanced case)</h2>
+            <pre style="font-size: 0.9em;"><code class="cpp" data-trim data-noescape>float useManyPowf(float a, float b, float c,
+         float d, float e, float f, float x)
+{
+  return
+      a * powf(x, 5.f) +
+      b * powf(x, 4.f) +
+      c * powf(x, 3.f) +
+      d * powf(x, 2.f) +
+      e * x            + f;
+}</code></pre>
+            <pre style="font-size: 0.95em;" class="console"><span>$ gcc -march=armv7-a -mthumb -O3 -S -o 1.s \
+> -mfpu=neon-vfpv4 -mfloat-abi=softfp 1.c</span></pre>
+          </section>
+          <section>
+            <h2>Strength Reduction (advanced)</h2>
+            <table style="width: 100%" class="simple">
+              <colgroup>
+                <col width="50%"/>
+                <col width="50%"/>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td width="50%">
+                    <pre><code class="armasm">useManyPowf:
+  push  {r3, lr}
+  flds  s17, [sp, #56]
+  fmsr  s24, r1
+  movs  r1, #0
+  fmsr  s22, r0
+  movt  r1, 16544
+  fmrs  r0, s17
+  fmsr  s21, r2
+  fmsr  s20, r3
+  flds  s19, [sp, #48]
+  flds  s18, [sp, #52]
+  bl  powf(PLT)
+  mov r1, #1082130432
+  fmsr  s23, r0
+  fmrs  r0, s17
+  bl  powf(PLT)
+</code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="armasm">  movs  r1, #0
+  movt  r1, 16448
+  fmsr  s16, r0
+  fmrs  r0, s17
+  bl  powf(PLT)
+  fmuls s16, s16, s24
+  vfma.f32  s16, s23, s22
+  fmsr  s15, r0
+  vfma.f32  s16, s15, s21
+  fmuls s15, s17, s17
+  vfma.f32  s16, s20, s15
+  vfma.f32  s16, s19, s17
+  fadds s15, s16, s18
+  fldmfdd sp!, {d8-d12}
+  fmrs  r0, s15
+  pop {r3, pc}</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
 
-    var nodes = document.querySelectorAll( selector );
+            Compiler was able just partly reduce the complexity and generate <strong><code>vfma</code></strong> there it is possible
+          </section>
 
-    for( var i = 0, len = nodes.length; i &lt; len; i++ ) {
-      var node = nodes[i];
+          <section>
+            <h2>Strength Reduction (manual)</h2>
+            <p>Let's further reduce latency by applying Horner rule.</p>
+            <pre  style="font-size: 0.7em;"><code class="cpp">float applyHornerf(float a, float b, float c,
+                   float d, float e, float f, float x)
+{
+  return ((((a * x + b) * x + c) * x + d) * x + e) * x + f;
+}</code></pre>
+            <pre style="font-size: 0.95em;" class="console"><span>$ gcc -march=armv7-a -mthumb -O3 -S -o 1.s \
+> -mfpu=neon-vfpv4 -mfloat-abi=softfp 1.c</span></pre>
+            <p>Compiler is not capable of this optimization because it doesn't produce exact result with the original formula</p>
+          </section>
+          <section>
+            <h2>Strength Reduction (manual)</h2>
+            <pre><code class="armasm">applyHornerf:
+  flds  s15, [sp, #8]
+  fmsr  s11, r0
+  fmsr  s12, r1
+  flds  s14, [sp]
+  vfma.f32  s12, s11, s15
+  fmsr  s11, r2
+  flds  s13, [sp, #4]
+  vfma.f32  s11, s12, s15
+  fcpys s12, s11
+  fmsr  s11, r3
+  vfma.f32  s11, s12, s15
+  vfma.f32  s14, s11, s15
+  vfma.f32  s13, s14, s15
+  fmrs  r0, s13
+  bx  lr</code></pre>
+          </section>
+        </section>
 
-      if( !node.className ) {
-        node.className += ' roll';
-      }
-    }
-  }
+        <section>
+          <section>
+            <h2>Auto-vectorization</h2>
+            <blockquote><b>Auto-vectorization</b> is machine code generation<br> that takes an advantage of vector instructions.</blockquote>
+            <ul>
+              <li>Most of all modern architectures have vector extensions as a co-processor or as dedicated pipes
+                <ul>
+                  <li>MMX, SSE, SSE2, SSE4, AVX, AVX-512</li>
+                  <li>AltiVec, VSX</li>
+                  <li>ASIMD (NEON), MSA</li>
+                </ul>
+              </li>
+              <li>Enabled by inlining, unrolling, fusion, software pipelining, inter-procedural optimization, and
+              other machine independent transformations.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Auto-vectorization</h2>
+            <pre><code class="cpp">void vectorizeMe(float *a, float *b, int len)
+{
+  int i;
+  for (i = 0; i < len; i++)
+    a[i] += b[i];
+}</code></pre>
+            <pre style="font-size: 0.95em;" class="console"><span>$ gcc -march=armv7-a -mthumb -O3 -S -o 1.s \
+> -mfpu=neon-vfpv4 -mfloat-abi=softfp \
+> -fopt-info-missed 1.c</span></pre>
+            <p>But, NEON does not support full IEEE 754,<br>so gcc cannot vectorize the loop, what it told us</p>
+            <pre style="font-size: 0.95em;" class="console"><span>1.c:64:3: note: not vectorized:
+relevant stmt not supported:_13 =_9+_12;</span>
+          </section>
+
+          <section>
+            <h2>Auto-vectorization</h2>
+             Here is a generated assembly
+            <pre><code class="armasm">.L3:
+  fldmias r1!, {s14}
+  flds  s15, [r0]
+  fadds s15, s15, s14
+  fstmias r0!, {s15}
+  cmp r0, r2
+  bne .L3</code></pre>
+            <p>But armv8-a does support, let's check it!</p>
+            <pre style="font-size: 0.95em;" class="console">$ gcc -march=armv8-a+simd -O3 -S -o 1.s \
+> -fopt-info-all 1.c</pre>
+            and... Here we are!
+            <pre style="font-size: 0.95em;" class="console">1.c:64:3: note: loop vectorized</pre>
+          </section>
+
+          <section>
+            <h2>Auto-vectorization</h2>
+            Here is a generated assembly and full optimizer's report
+            <pre><code class="armasm">.L6:
+  ldr q1, [x3],16
+  add w6, w6, 1
+  ldr q0, [x7],16
+  cmp w6, w4
+  fadd  v0.4s, v0.4s, v1.4s
+  str q0, [x8],16
+  bcc .L6</code></pre>
+
+            <pre  style="font-size: 0.54em;" class="console"><span>
+1.c:66:3: note: loop <b>vectorized</b>
+1.c:66:3: note: loop <b>versioned</b> for vectorization because of possible aliasing
+1.c:66:3: note: loop <b>peeled</b> for vectorization to enhance alignment
+1.c:66:3: note: loop with 3 iterations completely <b>unrolled</b>
+1.c:61:6: note: loop with 3 iterations completely <b>unrolled</b>
+</span></pre>
+            <strong>Compiler versions the loop to allow optimized paths<br/>in case of aligned and non-aliasing pointers</strong>
+          </section>
+
+          <section>
+            <h2>keywords</h2>
+            Let's follow the advice to put some keywords
+            <pre><code class="cpp">void vectorizeMe(float* __restrict a_, float* __restrict b_, int len)
+{
+  float *a=__builtin_assume_aligned(a_, 16);
+  float *b=__builtin_assume_aligned(b_, 16);
+  for (int i = 0; i < len; i++)
+    a[i] += b[i];
+}</code></pre>
+            Optimizer's report shrinks.
+            <pre style="font-size: 0.7em;" class="console" >
+1.c:66:3: note: loop vectorized
+1.c:66:3: note: loop with 3 iterations completely unrolled</pre>
+            <strong><b><code>__restrict</code></b> and <b><code>__builtin_assume_aligned</code></b> keywords only eliminate some loop
+            versioning, but are not very useful from the performance perspective</strong>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Function body inlining</h2>
+            <blockquote>Replaces functional call to function body itself.</blockquote>
+            <pre><code class="cpp">int square(int x) { return x*x; }
+
+for (int i = 0; i < len; i++)
+  arr[i] = square(i);</code></pre>
+            <p>Becomes</p>
+            <pre><code class="cpp">for (int i = 0; i < len; i++)
+    arr[i] = i*i;</code></pre>
+            <p><strong>Enables all further optimizations.</strong><br>
+            Machine-independent, interprocedural.</p>
+          </section>
+
+          <section>
+            <h2>Function body inlining</h2>
+            <pre class="console" style="font-size: 0.95em;">gcc -march=armv8-a+nosimd -O3 -S -o 1.s 1.c</pre>
+            <pre><code class="armasm" data-trim data-noescape>.L2:
+  add x2, x4, :lo12:.LANCHOR0
+  mov x1, 34464
+  mul w3, w0, w0
+  <abbr title="Move 16-bit immediate into register, keeping other bits unchanged.">movk</abbr>  x1, 0x1, lsl 16
+  str w3, [x2,x0,lsl 2]
+  add x0, x0, 1
+  cmp x0, x1
+  bne .L2</code></pre>
+            <p>Let's compile the code with vector extension enabled <strong>
+            <pre style="font-size: 0.95em;" class="console">-march=armv8-a+simd</pre></strong></p>
+          </section>
+
+          <section>
+            <h2>Function body inlining</h2>
+            <pre><code class="armasm">  add x0, x0, :lo12:.LANCHOR0
+  movi  v2.4s, 0x4
+  ldr q0, [x1]
+  add x1, x0, 397312
+  add x1, x1, 2688
+.L2:
+  mul v1.4s, v0.4s, v0.4s
+  add v0.4s, v0.4s, v2.4s
+  str q1, [x0],16
+  cmp x0, x1
+  bne .L2</code></pre>
+            <p>Auto-vectorization is enabled because of possibility<br> to inline function call inside a loop.</p>
+          </section>
+        </section>
+
+        <section>
+
+          <section>
+            <h2>Filling/copying memory blocks</h2>
+            <p>Compiler automatically uses the library functions <code>memset</code> and <code>memcpy</code>
+            to initialize and copy memory blocks</p>
+            <pre style="font-size: 0.7em;"><code style="max-height:720px;" data-trim class="cpp" >static char a[100000];
+static char b[100000];
+static int at(int idx, char val)
+{
+ if (idx&gt;=0 &amp;&amp; idx&lt;100000)
+  a[idx] = val;
 }
-                    </code></pre>
-                    <p>Code syntax highlighting courtesy of <a href="http://softwaremaniacs.org/soft/highlight/en/description/">highlight.js</a>.</p>
-                </section>
 
-                <section>
-                    <h2>Intergalactic Interconnections</h2>
-                    <p>
-                        You can link between slides internally,
-                        <a href="#/2/3">like this</a>.
-                    </p>
-                    <aside class="notes">
-                        Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard). Press B or . on your keyboard to pause the presentation. This is helpful when you're on stage and want to take distracting slides off the screen.
-                    </aside>
-                </section>
+int main()
+{
+ for (int i=0; i&lt;100000; ++i) a[i]=42;
+ for (int i=0; i&lt;100000; ++i) at(i,-1);
+ for (int i=0; i&lt;100000; ++i) b[i] = a[i];
+}</code></pre>
+          </section>
 
-                <section>
-                    <h2>Global State</h2>
-                    <p>
-                        Set <code>data-state="something"</code> on a slide and <code>"something"</code>
-                        will be added as a class to the document element when the slide is open. This lets you
-                        apply broader style changes, like switching the page background.
-                    </p>
-                </section>
+          <section>
+            <h2>Filling/copying memory blocks</h2>
+            Compiler knows what you mean
+            <pre style="font-size: 0.55em;"><code style="max-height:720px;" class="x86asm">main:
+.LFB1:
+  .cfi_startproc
+  subq  $8, %rsp
+  .cfi_def_cfa_offset 16
+  movl  $100000, %edx
+  movl  $42, %esi
+  movl  $a, %edi
+  call  memset
+  movl  $100000, %edx
+  movl  $255, %esi
+  movl  $a, %edi
+  call  memset
+  movl  $100000, %edx
+  movl  $a, %esi
+  movl  $b, %edi
+  call  memcpy
+  addq  $8, %rsp
+  .cfi_def_cfa_offset 8
+  ret</code></pre>
+          </section>
 
-                <section data-state="customevent">
-                    <h2>State Events</h2>
-                    <p>
-                        Additionally custom events can be triggered on a per slide basis by binding to the <code>data-state</code> name.
-                    </p>
-                    <pre><code class="javascript" data-trim contenteditable style="font-size: 18px;">
-Reveal.addEventListener( 'customevent', function() {
-    console.log( '"customevent" has fired' );
-} );
-                    </code></pre>
-                </section>
+          <section>
+            <h2>Filling/copying memory blocks</h2>
+            The same picture, if the code is compiled for ARM target
+            <pre style="font-size: 0.54em;"><code style="max-height:720px;" class="x86asm">main:
+  ldr r3, .L3
+  mov r1, #42
+  stmfd sp!, {r4, lr}
+  add r3, pc, r3
+  movw  r4, #34464
+  movt  r4, 1
+  mov r0, r3
+  mov r2, r4
+  bl  memset(PLT)
+  mov r2, r4
+  mov r1, #255
+  bl  memset(PLT)
+  mov r2, r4
+  mov r3, r0
+  ldr r0, .L3+4
+  mov r1, r3
+  add r0, pc, r0
+  add r0, r0, #1792
+  bl  memcpy(PLT)
+  ldmfd sp!, {r4, pc}</code></pre>
+          </section>
+        </section>
 
-                <section>
-                    <h2>Much more</h2>
-                    <ul>
-                        <li>Right-to-left support</li>
-                        <li><a href="https://github.com/hakimel/reveal.js#api">Extensive JavaScript API</a></li>
-                        <li><a href="https://github.com/hakimel/reveal.js#auto-sliding">Auto-progression</a></li>
-                        <li><a href="https://github.com/hakimel/reveal.js#parallax-background">Parallax backgrounds</a></li>
-                        <li><a href="https://github.com/hakimel/reveal.js#keyboard-bindings">Custom keyboard bindings</a></li>
-                    </ul>
-                </section>
+        <section>
+          <section>
+            <h2>Case Study: floating point</h2>
+            <pre style="font-size: 0.7em;"><code class="cpp">double power( double d, unsigned n)
+{
+  double x = 1.0;
+  for (unsigned j = 1; j&lt;=n; j++, x *= d) ;
+  return x;
+}
+int main ()
+{
+  double a = 1./0x80000000U, sum = 0.0;
+  for (unsigned i=1; i&lt;= 0x80000000U; i++)
+    sum += power( i*a, i % 8);
+  printf ("sum = %g\n", sum);
+}</code></pre>
+            <small style="float:right;">
+              <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-dp-c">flags-dp.c</a>
+            </small>
+          </section>
 
-                <section style="text-align: left;">
-                    <h1>THE END</h1>
-                    <p>
-                        - <a href="http://slides.com">Try the online editor</a> <br>
-                        - <a href="https://github.com/hakimel/reveal.js">Source code &amp; documentation</a>
-                    </p>
-                </section>
+          <section>
+            <h2>Case Study: floating point</h2>
+            <ol style="width:90%">
+              <li>Compile it <b>without</b> optimization
+                <pre style="font-size: 0.8em;" class="console"><span>$ gcc -std=c99 -Wall -O0 flags-dp.c -o flags-dp
+$ time ./flags-dp
+sum = 7.29569e+08
+real  0m24.550s</span></pre></li>
+              <li>Compile it with <b>O1</b>: <b>~3.26 speedup</b>
+                <pre style="font-size: 0.8em;" class="console"><span>$ gcc -std=c99 -Wall -O1 flags-dp.c -o flags-dp
+$ time ./flags-dp</code></strong>
+sum = 7.29569e+08
+real  0m7.529s</span></pre></li>
+            </ol>
+          </section>
 
+          <section>
+            <h2>Case Study: floating point</h2>
+            <ol start="3" style="width:90%">
+              <li>Compile it with <b>O2</b>: <b>~1.24 speedup</b>
+                <pre style="font-size: 0.8em;" class="console"><span>$ gcc -std=c99 -Wall -O2 flags-dp.c -o flags-dp
+$ time ./flags-dp
+sum = 7.29569e+08
+real  0m6.069s</span></pre></li>
+              <li>Compile it with <b>O3</b>:  <b>~1.00 speedup</b>
+                <pre style="font-size: 0.8em;" class="console"><span>$ gcc -std=c99 -Wall -O3 flags-dp.c -o flags-dp
+$ time ./flags-dp</code></strong>
+sum = 7.29569e+08
+real  0m6.067s</span></pre></li>
+            </ol>
+            <p><b>Total speedup is ~4.05</b></p>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Case Study: integer</h2>
+            <pre style="font-size: 0.7em;"><code class="cpp">int power( int d, unsigned n)
+{
+  int x = 1;
+  for (unsigned j = 1; j&lt;=n; j++, x*=d) ;
+  return x;
+}
+int main ()
+{
+  int64_t sum = 0;
+  for (unsigned i=1; i&lt;0x80000000U; i++)
+    sum += power( i, i % 8);
+  printf ("sum = %ld\n", sum);
+}</code></pre>
+            <small style="float:right;">
+              <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-c">flags.c</a>
+            </small>
+          </section>
+
+          <section>
+            <h2>Case Study: integer</h2>
+            <ol style="width:90%">
+              <li>Compile it <b>without</b> optimization
+                <pre style="font-size: 0.8em;" class="console"><span>$ gcc -std=c99 -Wall -O0 flags.c -o flags
+$ time ./flags
+sum = 288231861405089791
+real  0m18.750s</span></pre></li>
+              <li>Compile it with <b>O1</b>: <b>~2.64 speedup</b>
+                <pre style="font-size: 0.8em;" class="console"><span>$ gcc -std=c99 -Wall -O1 flag.c -o flags
+$ time ./flags</code></strong>
+sum = 288231861405089791
+real  0m7.092s</span></pre></li>
+            </ol>
+          </section>
+
+          <section>
+            <h2>Case study: integer</h2>
+            <ol start="3" style="width:90%">
+              <li>Compile it with <b>O2</b>:<b>~0.97 speedup</b>
+                <pre style="font-size: 0.8em;" class="console"><span>$ gcc -std=c99 -Wall -O2 flags.c -o flags
+$ time ./flags
+sum = 288231861405089791
+real  0m7.300s</span></pre></li>
+              <li>Compile it with <b>O3</b>:  <b>~1.00 speedup</b>
+                <pre style="font-size: 0.8em;" class="console"><span>$ gcc -std=c99 -Wall -O3 flags.c -o flags
+$ time ./flags</code></strong>
+sum = 288231861405089791
+real  0m7.082s</span></pre></li>
+            </ol>
+            <h3>What there is no improvement?</h3>
+          </section>
+
+          <section>
+            <h2>Example: integer</h2>
+            <table style="width:100%; font-size:0.8em;" class="simple">
+              <colgroup>
+                <col style="width:33%;"/>
+                <col style="width:33%;"/>
+                <col style="width:33%;"/>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td style="border-right: 3px double #F0E7D5;">-O1
+                    <pre><code class="x86asm" style="max-height: 720px;">  movl  $1, %r8d
+  movl  $0, %edx
+.L9:
+  movl  %r8d, %edi
+  movl  %r8d, %esi
+  andl  $7, %esi
+  je  .L10
+  movl  $1, %ecx
+  movl  $1, %eax
+.L8:                @
+  addl  $1, %eax    @
+  imull %edi, %ecx  @
+  cmpl  %eax, %esi  @
+  jae .L8
+  jmp .L7
+.L10:
+  movl  $1, %ecx
+.L7:
+  movslq  %ecx, %rcx
+  addq  %rcx, %rdx
+  addl  $1, %r8d
+  jns .L9
+  @ printing is here</code></pre>
+                  </td>
+                  <td>-O2
+                    <pre><code class="x86asm">  movl    $1, %esi
+    movl    $1, %r8d
+    xorl    %edx, %edx
+    .p2align 4,,10
+    .p2align 3
+.L10:
+    movl    %r8d, %edi
+    andl    $7, %edi
+    je  .L11
+    movl    $1, %ecx
+    movl    $1, %eax
+    .p2align 4,,10
+    .p2align 3
+.L9:
+    addl    $1, %eax
+    imull   %esi, %ecx
+    cmpl    %eax, %edi
+    jae .L9
+    movslq  %ecx, %rcx</code></pre>
+                  </td>
+                  <td><br/>
+                    <pre><code class="x86asm">.L8:
+    addl    $1, %r8d
+    addq    %rcx, %rdx
+    testl   %r8d, %r8d
+    movl    %r8d, %esi
+    jns .L10
+    subq    $8, %rsp
+    @ printing is here
+    ret
+.L11:
+    movl    $1, %ecx
+    jmp .L8</code></pre>
+                  <br>
+                  <h3>Compiler overdone with branch twiddling!</h3>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+        </section>
+        <section>
+
+          <section>
+            <h2>Helping a compiler</h2>
+            <blockquote>Compiler usually applies optimization to the inner loops. In this example number of iterations in the inner
+            loop depends on a value of an induction variable of the outer loop.</blockquote>
+            <p> Let's help the compiler (
+            <small style="vertical-align:middle;">
+              <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-dp-tuned-c">flags-dp-tuned.c</a>
+            </small>)</p>
+          </section>
+          <section>
+            <h2>Helping a compiler</h2>
+            <pre><code class="cpp">/*power function is not changed*/
+int main ()
+{
+  double a = 1./0x80000000U, s = -1.;
+  for (double i=0; i<=0x80000000U-8; i += 8)
+  {
+    s+=power((i+0)*a,0);s+=power((i+1)*a,1);
+    s+=power((i+2)*a,2);s+=power((i+3)*a,3);
+    s+=power((i+4)*a,4);s+=power((i+5)*a,5);
+    s+=power((i+6)*a,6);s+=power((i+7)*a,7);
+  }
+  printf ("sum = %g\n", s);
+}</code></pre>
+            <p><pre style="font-size: 0.7em;" class="console"><span>$ gcc -std=c99 -Wall -O3 flags-dp-tuned.c -o flags-dp-tuned
+$ time ./flags-dp-tuned</code></strong>
+sum = 7.29569e+08
+real  0m2.448s</span></pre>
+            <b>Speedup is ~2.48x.</b>
+            </p>
+          </section>
+
+          <section>
+            <h2>Helping a compiler</h2>
+            Let's try it for integers (
+              <small style="vertical-align:middle;">
+                <a href="https://gist.github.com/cuda-geek/2be305eb6aa99dc55aa6#file-test-flags-tuned-c">flags-tuned.c</a>
+              </small>)
+
+            <pre style="font-size: 0.5em;"><code class="cpp">/*power function is not changed*/
+int main ()
+{
+  int64_t sum = -1;
+  for (unsigned i=0; i<=0x80000000U-8; i += 8)
+  {
+    sum+=power(i+0, 0); sum+=power(i+1,1);
+    sum+=power(i+2, 2); sum+=power(i+3,3);
+    sum+=power(i+4, 4); sum+=power(i+5,5);
+    sum+=power(i+6, 6); sum+=power(i+7,7);
+  }
+  printf ("sum = %ld\n", sum);
+}</code></pre>
+            <pre style="font-size: 0.7em;" class="console"><span>$ gcc -std=c99 -Wall -O3 flags-tuned.c -o flags-tuned
+$ time ./flags-tuned</code></strong>
+sum = 288231861405089791
+real  0m1.286s</span></pre>
+            <b>Speedup is ~5.5x.</b>
+          </section>
+
+        </section>
+        <section>
+
+          <section>
+            <h2>Detailed analysis</h2>
+            <p>This is how the compiler sees the outer loop<br> after inner loop inlining</p>
+            <pre style="font-size: 0.7em;" ><code class="cpp">int64_t sum = -1;
+for (unsigned i=0; i<=0x80000000U-8; i += 8)
+{
+  int d = (int)i;
+  sum+=1;
+  sum+=(1+d);
+  sum+=(2+d)*(2+d);
+  sum+=(3+d)*(3+d)*(3+d);
+  sum+=(4+d)*(4+d)*(4+d)*(4+d);
+  sum+=(5+d)*(5+d)*(5+d)*(5+d)*(5+d);
+  sum+=(6+d)*(6+d)*(6+d)*(6+d)*(6+d)*(6+d);
+  sum+=(7+d)*(7+d)*(7+d)*(7+d)*(7+d)*(7+d)*(7+d);
+}</code></pre>
+          </section>
+
+          <section>
+            <h2>5 loop counters instead of 1</h2>
+            <pre style="font-size: 0.7em;" ><code class="x86asm" style="max-height: 720px;">  movl  $6, %r11d
+  movl  $5, %r10d
+  movl  $4, %ebx
+  movl  $3, %r9d
+  movl  $2, %r8d
+  movq  $-1, %rax // <-accumulator
+.L3:
+  // loop body
+  addl  $8, %r8d
+  addl  $8, %r9d
+  addl  $8, %ebx
+  addl  $8, %r10d
+  addl  $8, %r11d
+  cmpl  $-2147483646, %r8d
+  jne .L3</code></pre>
+          </section>
+
+          <section>
+            <h2>(i+1), (i+2), (i+3)</h2>
+            <pre style="font-size: 0.7em;" ><code class="x86asm" style="max-height: 720px;">leal  -1(%r8), %edx      // 2+i-1
+movslq  %edx, %rdx       // to long
+leaq  1(%rax,%rdx), %rdi // sum += 1+i
+
+movl  %r8d, %edx         // 2+i
+imull %r8d, %edx         // (2+i)**2
+movslq  %edx, %rdx       // to long
+leaq  (%rdx,%rdi), %rsi  // sum += (2+i)**2
+
+movl  %r9d, %ecx
+imull %r9d, %ecx
+imull %r9d, %ecx
+movslq  %ecx, %rcx
+leaq  (%rcx,%rsi), %rdx</code></pre>
+          </section>
+
+          <section>
+            <h2>(i+4), (i+5), (i+6)</h2>
+            <pre style="font-size: 0.7em;" ><code class="x86asm" style="max-height: 720px;">movl  %ebx, %eax
+imull %ebx, %eax
+imull %eax, %eax
+cltq
+leaq  (%rax,%rdx), %rcx
+movl  %r10d, %eax
+imull %r10d, %eax
+imull %eax, %eax
+imull %r10d, %eax
+cltq
+addq  %rcx, %rax
+movl  %r11d, %edx
+imull %r11d, %edx
+imull %r11d, %edx
+imull %edx, %edx
+movslq  %edx, %rdx
+addq  %rdx, %rax</code></pre>
+          </section>
+
+          <section>
+            <h2>(i+7)</h2>
+            <pre style="font-size: 0.7em;" ><code class="x86asm" style="max-height: 720px;">  leal  5(%r8), %esi
+  movl  $7, %ecx
+  movl  $1, %edx
+.L2:
+  imull %esi, %edx
+  subl  $1, %ecx
+  jne .L2
+  movslq  %edx, %rdx
+  addq  %rdx, %rax</code></pre>
+          <a href="https://gist.github.com/cuda-geek/026a22b4390e4a648bbc#file-case-study-power-1-7-s">Full listing is available in gitHub</a>
+          </section>
+        </section>
+
+
+        <section>
+          <h2>Summary</h2>
+          <ul>
+            <li></li>
+          </ul>
+        </section>
+
+        <section>
+          <h1>THE END</h1>
+          <img class="simple" src="images/popt/infinity.png">
+          <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015-2016</h4s>
+        </section>
             </div>
-
         </div>
 
         <script src="lib/js/head.min.js"></script>
@@ -196,7 +836,8 @@ Reveal.addEventListener( 'customevent', function() {
                 controls: true,
                 progress: true,
                 history: true,
-                center: true,
+                center: false,
+                slideNumber: true,
 
                 // parallaxBackgroundImage: "https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg",
                 // parallaxBackgroundSize: "2100px 900px",
