@@ -116,7 +116,7 @@
           <ul>
             <li>Code portability decreases when we go deeper</li>
             <li>Performance portability decreases when we go deeper</li>
-            <li>The cost of maintenance &amp; extensibility increases when we go deeper</li>
+            <li>The cost of maintenance and extensibility increases<br> when we go deeper</li>
             <li>Optimizations are often not reusable</li>
             <li>Optimizations become obsolete very quickly</li>
           </ul>
@@ -142,10 +142,13 @@
             <li><b>The platform</b>
               <ul>
                 <li>Architecture capabilities
-                  <ul>I<small style="vertical-align: bottom">nstruction</small>
-                      S<small style="vertical-align: bottom">et</small>
-                      A<small style="vertical-align: bottom">rchitecture</small></ul>
-                </li>
+                <ul>
+                  <li>
+                    I<small style="vertical-align: bottom">nstruction</small>
+                    S<small style="vertical-align: bottom">et</small>
+                    A<small style="vertical-align: bottom">rchitecture</small>
+                  </li>
+                </ul></li>
                 <li>Micro-architecture specifics</li>
               </ul>
             </li>
@@ -157,8 +160,8 @@
           <br/><br/>
           <table style="font-size:2em;">
             <colgroup>
-              <col></col>
-              <col></col>
+              <col/>
+              <col/>
             </colgroup>
             <tbody>
               <tr>
@@ -179,28 +182,31 @@
 
         <section>
           <h2>Optimization cycle</h2>
-          <img class="simple" src="images/popt/opt_cycle.svg"/>
+          <img alt="Optimization cycle" class="simple" src="images/popt/opt_cycle.svg"/>
         </section>
 
         <section>
           <h2>Top-Down (High-low) approach</h2>
           <ol style="width: 60%">
             <li>Understand the code</li>
-            <li>Use appropriate algorithms</li>
-            <br/>
+            <li>Use appropriate algorithms
+              <br><br>
+            </li>
             <li>Optimize memory access patterns</li>
-            <li>Minimize number of operations</li>
-            <br/>
+            <li>Minimize number of operations
+              <br><br>
+            </li>
             <li>Shrink the critical path</li>
-            <li>Perform HW-specific optimizations</li>
-            <br/>
+            <li>Perform HW-specific optimizations
+              <br><br>
+            </li>
             <li>Dive into assembly</li>
           </ol>
         </section>
 
         <section>
           <h2>Optimization cycle (revised)</h2>
-          <img class="simple" src="images/popt/opt_cycl_reviced.svg"/>
+          <img alt="Optimization cycle(reviced)"  class="simple" src="images/popt/opt_cycl_reviced.svg"/>
         </section>
 
         <section>
@@ -210,18 +216,23 @@
               <ul>
                 <li>you'll need some time to get used to the code</li>
               </ul>
-            </li><br/>
+              <br>
+            </li>
             <li><b>Understand dataflow</b>
               <ul>
                 <li>input/output parameters</li>
                 <li>data dependencies</li>
               </ul>
-            </li><br/>
+              <br/>
+            </li>
             <li><b>Identify performance limiters</b>
               <ul>
                 <li>Time</li>
                 <li>Profile</li>
-                <li>Collect metrics (e.g. power consumption)</li>
+                <li>Collect metrics
+                  <ul>
+                    <li>e.g. CPI, power consumption</li>
+                  </ul></li>
               </ul>
             </li>
           </ul>
@@ -232,7 +243,8 @@
             <h2>Step #2: use appropriate algorithm</h2>
             <ul>
               <li>Consider and lower big O complexity
-            <img width="50%" src="images/popt/Big-O-Time-Complexity-Chart.png"/></li>
+                <img alt="Algorithmic complexity" style="width: 50%;" src="images/popt/Big-O-Time-Complexity-Chart.png"/>
+              </li>
               <li>Choose data structures wisely</li>
               <li>Look for optimized libraries</li>
               <li>Find opportunities to scalarize &amp; parallelize</li>
@@ -260,24 +272,21 @@
         <section>
           <section>
             <h2>Step #3: optimize memory accesses</h2>
-            <blockquote>You will be surprised to see<br/>how many algorithms are memory bound</blockquote>
+            <blockquote>You'll be surprised how many algorithms are memory bound!</blockquote>
             <p>Optimization for memory usually involves:</p>
             <dl>
               <dt><b>Data restructuring</b></dt>
-              <ul>
-                <li>to load only data that is really needed for computations.</li>
-              </ul>
+              <dd>to load only data that is really needed for computations.</dd>
               <dt><b>Data packaging</b></dt>
+              <dd>to shrink the data in size</dd>
+              <dt><b>Loop transformations</b></dt>
+              <dd>
                 <ul>
-                  <li>to shrink the data in size</li>
+                  <li>to walk through the data in a more efficient way,</li>
+                  <li>to increase temporal &amp; spacial locality,</li>
+                  <li>to perform cache-aware optimization</li>
                 </ul>
               </dd>
-              <dt><b>Loop transformations</b></dt>
-              <ul>
-                <li>to walk through the data in a more efficient way,</li>
-                <li>to increase temporal &amp; spacial locality,</li>
-                <li>to perform cache-aware optimization</li>
-              </ul>
             </dl>
           </section>
 
@@ -300,26 +309,26 @@
 
           <section>
             <h2>Step #3: optimize memory accesses</h2>
-            <p><pre><code class="cpp" style="font-size: 1.5em; line-height: 1.2em;">for (int j = 0; j &lt; height; j++)
+            <pre><code class="cpp" style="font-size: 1.5em; line-height: 1.2em;">for (int j = 0; j &lt; height; j++)
   for (int i = 0; i &lt; width; i++)
     if (img[j * width + i] &gt; 0)
-      count++;</code></pre></p>
-            <p><pre><code class="cpp" style="font-size: 1.5em; line-height: 1.2em;">for (int i = 0; i &lt; width; i++)
+      count++;</code></pre>
+            <pre><code class="cpp" style="font-size: 1.5em; line-height: 1.2em;">for (int i = 0; i &lt; width; i++)
   for (int j = 0; j &lt; height; j++)
     if (img[j * width + i] &gt; 0)
-      count++;</code></pre></p>
+      count++;</code></pre>
             <h3>Which is more optimal for conventional CPU processor?</h3>
           </section>
           <section>
             <h2>Step #3: optimize memory accesses</h2>
-            <p><pre style="border: 3px double #FF8D14;"><code class="cpp" style="font-size: 1.5em; line-height: 1.2em;">for (int j = 0; j &lt; height; j++)
+            <pre style="border: 3px double #FF8D14;"><code class="cpp" style="font-size: 1.5em; line-height: 1.2em;">for (int j = 0; j &lt; height; j++)
   for (int i = 0; i &lt; width; i++)
     if (img[j * width + i] &gt; 0)
-      count++;</code></pre></p>
-             <p><pre><code class="cpp" style="font-size: 1.5em; line-height: 1.2em;">for (int i = 0; i &lt; width; i++)
+      count++;</code></pre>
+            <pre><code class="cpp" style="font-size: 1.5em; line-height: 1.2em;">for (int i = 0; i &lt; width; i++)
   for (int j = 0; j &lt; height; j++)
     if (img[j * width + i] &gt; 0)
-      count++;</code></pre></p>
+      count++;</code></pre>
           </section>
         </section>
 
@@ -332,12 +341,12 @@
             The compiler usually helps a lot here:
             <table class="simple">
               <colgroup>
-                <col></col>
-                <col></col>
+                <col/>
+                <col/>
               </colgroup>
               <tbody>
                 <tr>
-                  <td width="50%">
+                  <td style="width: 50%;">
                     <b>Machine-independent optimizations</b>
                     <ul>
                       <li>C<small style="vertical-align: bottom">ommon</small>
@@ -379,12 +388,12 @@
             <h2>Step #4: minimize number of operations</h2>
             <table class="simple" style="width: 100%;">
               <colgroup>
-                <col></col>
-                <col></col>
+                <col/>
+                <col/>
               </colgroup>
               <tbody>
                 <tr>
-                  <td width="50%">
+                  <td style="width: 50%;">
                     <pre><code class="armasm">pows:
   push  {r3, lr}
   flds  s17, [sp, #56]
@@ -404,7 +413,7 @@
   bl  powf(PLT)
 </code></pre>
                   </td>
-                  <td width="50%">
+                  <td style="width: 50%;">
                     <pre><code class="armasm">  movs  r1, #0
   movt  r1, 16448
   fmsr  s16, r0
@@ -457,8 +466,8 @@
             <p>Unfortunately, sometimes a compiler fails some optimization steps (e.g. register allocation, scalarization)
             and harms the performance by
             introducing redundant operations.</p>
-            <p><blockquote><strong>Starting from this optimization step it is worth to <b>look at the assembly code</b> to check
-             whether the compiler is actually automating a particular optimization.</strong></blockquote></p>
+            <blockquote><strong>Starting from this optimization step it is worth to <b>look at the assembly code</b> to check
+             whether the compiler is actually automating a particular optimization.</strong></blockquote>
           </section>
         </section>
 
@@ -466,7 +475,7 @@
           <section>
             <h2>Step #5: shrink the critical path</h2>
             <blockquote><strong>Critical path</strong> is <b>the longest</b> sequence of operations in a code block
-              that must be completed <b>in order</b>, which is usually caused by dependencies between steps or operations.</dd>
+              that must be completed <b>in order</b>, which is usually caused by dependencies between steps or operations.
             </blockquote>
             <ul>
               <li>The critical path of a code block is hardly deducible from high-level code and requires assembly inspection.</li>
@@ -479,15 +488,15 @@
           <section>
             <h2>Step #5: shrink the critical path</h2>
             <p>Let's look at the critical path of the following code block.</p>
-            <p><pre><code class="cpp">const uint8_t* p0 = src.ptr(row0);
+            <pre><code class="cpp">const uint8_t* p0 = src.ptr(row0);
 const uint8_t* p1 = src.ptr(row1);
 uint8_t* dptr = dst.ptr(row);
 
-for (int col = 0; col < cols; ++col)
+for (int col = 0; col &lt; cols; ++col)
 {
   dptr[col] = (p0[col*2]+p0[col*2+1]
              + p1[col*2]+p1[col*2+1]+2)&gt;&gt;2;
-}</code></pre></p>
+}</code></pre>
             <h3>What is the critical path of this code line?</h3>
           </section>
           <section>
@@ -509,19 +518,19 @@ r10 = shl(r9, 2)     // 11</code></pre>
           </section>
           <section>
             <h2>Step #5: shrink the critical path</h2>
-            <img width="70%" class="simple" src="images/popt/path.svg"/>
+            <img alt="Critical path" style="width:70%;" class="simple" src="images/popt/path.svg"/>
             <h3 style="margin-bottom: 0px;">8 ?</h3>
           </section>
           <section>
             <h2>Step #5: shrink the critical path</h2>
             But, the compiler reorders instructions <br> since integer math is associative
-            <img width="70%" class="simple" src="images/popt/path2.svg"/>
+            <img alt="Critical path" style="width:70%;" class="simple" src="images/popt/path2.svg"/>
             <h3 style="margin-bottom: 0px;">6 ?</h3>
           </section>
           <section>
             <h2>Step #5: shrink the critical path</h2>
             And let's assume that hardware schedules<br> 1 arithmetic and 1 memory operation per clock.
-            <img width="48%" class="simple" src="images/popt/path3.svg"/>
+            <img alt="Critical path" style="width:48%;" class="simple" src="images/popt/path3.svg"/>
             <h3 style="margin-bottom: 0px;">and back to 8 again</h3>
           </section>
         </section>
@@ -592,13 +601,13 @@ r10 = shl(r9, 2)     // 11</code></pre>
             <dt>Dig into an architecture</dt>
             <dd><abbr title="Hardware">HW</abbr> evolves rapidly hence devices obsolete in a wink. <strong>Comprehensive
             knowledge helps see beforehand</strong>.</dd>
-          </dd>
+          </dl>
         </section>
 
         <section>
           <section>
             <h2>Recommended literature</h2>
-            <img width="27%" src="images/popt/hp.jpg">
+            <img alt="ter Architecture, Fifth Edition: A Quantitative Approach" style="width:27%" src="images/popt/hp.jpg">
             <p>
               <a href="http://www.amazon.com/Computer-Architecture-Fifth-Quantitative-Approach/dp/012383872X/ref=asap_bc?ie=UTF8">
                 Computer Architecture, Fifth Edition:<br> A Quantitative Approach</a><br/>by
@@ -610,7 +619,7 @@ r10 = shl(r9, 2)     // 11</code></pre>
 
           <section>
             <h2>Recommended literature</h2>
-            <img src="images/popt/moh.jpg">
+            <img alt="The Mature Optimization Handbook" src="images/popt/moh.jpg">
             <p>
               <a href="http://carlos.bueno.org/optimization/mature-optimization.pdf">The Mature Optimization Handbook</a>
               by <a href="http://carlos.bueno.org/about.html">Carlos Bueno</a>
@@ -619,7 +628,7 @@ r10 = shl(r9, 2)     // 11</code></pre>
 
           <section>
             <h2>Recommended literature</h2>
-            <img width="26%" src="images/popt/pm.jpg">
+            <img alt="Is Parallel Programming Hard, And, If So, What Can You Do About It?" style="width:26%" src="images/popt/pm.jpg">
             <p><a href="https://www.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook-1c.2015.01.31a.pdf">
               Is Parallel Programming Hard, <br>And, If So, What Can You Do About It?</a><br/> by
               <a href="http://www.rdrop.com/~paulmck/">Paul E. McKenney</a>
@@ -628,7 +637,7 @@ r10 = shl(r9, 2)     // 11</code></pre>
 
           <section>
               <h2>Recommended literature</h2>
-              <img width="27%" src="images/popt/ec.jpg">
+              <img alt="Engineering a Compiler" style="width:27%" src="images/popt/ec.jpg">
               <p><a href="http://www.amazon.com/Engineering-Compiler-Second-Edition-Cooper/dp/012088478X">
               Engineering a Compiler</a><br/> by
               <a href="http://www.cs.rice.edu/~keith/">Keith Cooper</a> and <a href="http://www.cs.rice.edu/~linda/">Linda Torczon</a>
@@ -653,8 +662,8 @@ r10 = shl(r9, 2)     // 11</code></pre>
 
         <section>
           <h1>THE END</h1>
-          <img class="simple" src="images/popt/infinity.png">
-          <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015-2016</h4s>
+          <img alt="The end" class="simple" src="images/popt/infinity.png">
+          <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015-2016</h4>
         </section>
 
       </div>
