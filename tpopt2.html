@@ -59,9 +59,9 @@
           <ul>
             <li><strong>Pragmatics</strong>
               <ul>
-                <li><b>Ordering optimization approaches</b></li>
+                <li>Ordering optimization approaches</li>
                 <li>Demystifying a compiler</li>
-                <li style="margin-bottom: 20px;">Mastering compiler optimizations</li>
+                <li style="margin-bottom: 20px;"><b>Mastering compiler optimizations</b></li>
               </ul>
             </li>
 <!--             <li><strong>Computer Architectures</strong>
@@ -83,9 +83,390 @@
         <section>
           <h2>Outline</h2>
           <ul>
-            <li></li>
+            <li>Constant folding</li>
+            <li>Hoisting loop invariant code</li>
+            <li>Scalarization</li>
+            <li>Loop unswitching</li>
+            <li>Loop peeling and sentinels</li>
+            <li>Strength reduction</li>
+            <li>Loop-induction variable elimination</li>
+            <li>Auto-vectorization</li>
+            <li>Function body inlining</li>
+            <li>Built-in detection</li>
+            <li>Case study</li>
           </ul>
         </section>
+
+        <section>
+          <h2>Constant folding</h2>
+          <blockquote>evaluates expressions from constants in compile time</blockquote>
+          <p>It is one of the simplest and most widely used compiler transformations. Expressions could be quite
+          complicated, but absence of any kind of side effects is always to be considered.</p>
+          <pre><code class="cpp">double b = exp(sqrt(M_PI/2));</code></pre>
+          <p></p>
+          <pre><code class="armacm">  fldd  d17, .L5
+// other code
+  .L5:
+    .word 2911864813
+    .word 1074529267</code></pre>
+          <p>May be performed in global as well as local scope.<br> Applicable to any code pattern.</p>
+        </section>
+
+        <section>
+          <section>
+            <h2>Hoisting Loop Invariant Code</h2>
+            <blockquote>The goal of <b>hoisting</b> &mdash; also called <b>loop-invariant code motion</b> &mdash; is to avoid recomputing
+            loop-invariant code each time through the body of a loop.</blockquote>
+                    <pre><code class="cpp">void scale(double* x, double* y, int len)
+{
+  for (int i = 0; i &lt; len; i++)
+    y[i] = x[i] * exp(sqrt(M_PI/2));
+}</code></pre>
+            <p>... is the same as...</p>
+            <pre><code class="cpp">void scale(double* x, double *y, int len)
+{
+  double factor = exp(sqrt(M_PI/2));
+  for (int i = 0; i &lt; len; i++)
+    y[i] = x[i] * factor;
+}</code></pre>
+          </section>
+          <section>
+            <h2>Hoisting Loop Invariant Code</h2>
+            <pre style="font-size: 0.95em;" class="console">$ gcc -march=armv7-a  -mthumb -O1 -S -o 1.s\
+-mfpu=neon-vfpv4 -mfloat-abi=softfp 1.c</pre>
+           <table class="simple" style="font-size:0.95em;">
+              <colgroup>
+                <col/>
+                <col/>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre><code class="armacm">  fldd  d17, .L5
+  .L3:
+    fldmiad r3!, {d16}
+    fmuld d16, d16, d17
+    fstmiad r1!, {d16}
+    cmp r3, r0
+    bne .L3
+  .L1:
+    bx  lr
+  .L5:
+    .word 2911864813
+    .word 1074529267</code></pre>
+                  </td>
+                  <td>
+                    <pre><code class="armasm">  fldd  d17, .L11
+  .L9:
+    fldmiad r3!, {d16}
+    fmuld d16, d16, d17
+    fstmiad r1!, {d16}
+    cmp r3, r0
+    bne .L9
+  .L7:
+    bx  lr
+  .L11:
+    .word 2911864813
+    .word 1074529267</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section>
+            <h2>Hoisting non-constants</h2>
+            <p>Let's make expression variable</p>
+            <pre><code class="cpp">void scale(double* x, double* y, int len)
+{
+  for (int i = 0; i &lt; len; i++)
+    y[i] = x[i] * exp(sqrt((double)len)/2.));
+}</code></pre>
+            <pre><code class="cpp">void scale(double* x, double *y, int len)
+{
+  double factor = exp(sqrt((double)len)/2.));
+  for (int i = 0; i &lt; len; i++)
+    y[i] = x[i] * factor;
+}</code></pre>
+            <pre style="font-size: 0.95em;" class="console">$ gcc -march=armv7-a  -mthumb -O1 -S -o 1.s\
+-mfpu=neon-vfpv4 -mfloat-abi=softfp 1.c</pre>
+          </section>
+
+          <section>
+            <h2>Hoisting non-constants</h2>
+           <table class="simple" style="font-size:0.95em;">
+              <colgroup>
+                <col/>
+                <col/>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre><code style="max-height: 490px;" class="armacm">  fmsr  s15, r2 @ int
+  fsitod  d9, s15
+  fsqrtd  d9, d9
+.L4:
+  fldmiad r6!, {d8}
+  fcpyd d16, d9
+  fcmpd d9, d9
+  fmstat
+  beq .L3
+  fmsr  s15, r7 @ int
+  fsitod  d16, s15
+  fmrrd r0, r1, d16
+  bl  sqrt(PLT)
+  fmdrr d16, r0, r1
+.L3:
+  fmuld d8, d8, d16
+  fstmiad r5!, {d8}
+  adds  r4, r4, #1
+  cmp r4, r7
+  bne .L4</code></pre>
+                  </td>
+                  <td>
+                    <pre><code style="max-height: 490px;" class="armasm">  fmsr  s15, r2 @ int
+  fsitod  d17, s15
+  fsqrtd  d17, d17
+  fcmpd d17, d17
+  fmstat
+  beq .L9
+  fsitod  d16, s15
+  fmrrd r0, r1, d16
+  bl  sqrt(PLT)
+  fmdrr d17, r0, r1
+.L9:
+  mov r3, r5
+  mov r1, r4
+  add r0, r5, r6, lsl #3
+.L11:
+  fldmiad r3!, {d16}
+  fmuld d16, d16, d17
+  fstmiad r1!, {d16}
+  cmp r3, r0
+  bne .L11</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <strong>Compiler isn't sure that floating point flags aren't affected!</strong>
+          </section>
+        </section>
+
+        <section>
+          <h2>Scalarization</h2>
+          <blockquote><b>Scalarization</b> replaces branchy code with a branchless analogy</blockquote>
+          Usually it is performed on a branches inside a loop body to allow further optimization. Machine-independent, local.
+         <table>
+            <colgroup>
+              <col/>
+              <col/>
+            </colgroup>
+            <tbody>
+              <tr>
+                <td style="padding-top: 0; padding-bottom: 0">
+            <pre><code class="cpp">int branchy(int i)
+{
+  if (i &gt; 4 && i &lt; 42) return 1;
+  return 0;
+}</code></pre>
+                </td>
+                <td style="padding-top: 0; padding-bottom: 0">
+              <pre><code class="cpp">int branchless(int i)
+{
+  return (((unsigned)i) - 5 &lt; 36);
+}
+</code></pre>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <pre style="font-size: 0.95em; margin-bottom: 0px; margin-top: 0px;" class="console">$ gcc -march=armv8-a+simd -O3 1.c -S -o 1.s</pre>
+          <table>
+            <colgroup>
+              <col/>
+              <col/>
+            </colgroup>
+            <tbody>
+              <tr>
+                <td  style="padding-top: 0; padding-bottom: 0">
+          <pre><code class="asm">branchy:
+  sub w0, w0, #5
+  cmp w0, 36
+  cset  w0, ls
+  ret</code></pre>
+                </td>
+                <td  style="padding-top: 0; padding-bottom: 0">
+<pre><code class="asm">branchless:
+  sub w0, w0, #5
+  cmp w0, 36
+  cset  w0, ls
+  ret</code></pre>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <section>
+            <h2>Loop unswitching</h2>
+            <blockquote>Moves loop-invariant conditionals or switches which are independent of the loop index out of
+            the loop. Increases <abbr title="instruction level parallelism">ILP</abbr>, enables further optimizations.</blockquote>
+            <table class="simple">
+              <colgroup>
+                <col/>
+                <col/>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td style="width: 50%;">
+                   <pre><code class="cpp">for (int i = 0; i &lt; len; i++)
+{
+ if (a > 32)
+  arr[i] = a;
+ else
+  arr[i] = 42;
+}
+</code></pre> </td>
+                  <td style="width: 50%;">
+                   <pre><code class="cpp">int i = 0;
+if (a > 32)
+ for (; i &lt; len; i++)
+  arr[i] = a;
+else
+ for (; i &lt; len; i++)
+  arr[i] = 42;</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <pre style="font-size: 0.95em;" class="console">$ gcc -march=armv8-a+simd -O3 -S -o 1.s \
+-fno-tree-vectorize 1.c</pre>
+            <small>auto-vectorization is disabled just to make example readable.</small>
+          </section>
+
+          <section>
+            <h2>Loop unswitching</h2>
+                   <pre><code style="max-height: 720px;" class="armasm"> cmp w1, wzr
+ ble .L1
+ cmp w2, 32
+ bgt .L6
+ mov x2, 0
+ mov w3, 42
+.L4:
+ str w3,[x0,x2,lsl 2]
+ add x2, x2, 1
+ cmp w1, w2
+ bgt .L4
+.L1:
+  ret
+L6:
+ mov x3, 0
+.L3:
+ str w2,[x0,x3,lsl 2]
+ add x3, x3, 1
+ cmp w1, w3
+ bgt .L3
+ ret</code></pre>
+          </section>
+
+          <section>
+            <h2>Loop peeling</h2>
+            <blockquote><b>Loop peeling</b> takes out of the loop and executes separately a small number of iterations
+            from the beginning or/and the end of a loop, which eliminates if-statements.</blockquote>
+            Can be done by a compiler under high optimization levels.
+            <table class="simple" style="font-size:0.85em;">
+              <colgroup>
+                <col/>
+                <col/>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td style="padding:0; width:50%">
+                   <pre><code class="cpp">for(int i=0; i&lt;len; i++)
+{
+  if (i == 0)
+    b[i] = a[i+1];
+  else if(i == len-1 )
+    b[i] = a[i-1];
+  else
+    b[i] = a[i+1]+a[i-1];
+}</code></pre>
+                  </td>
+                  <td>
+                   <pre><code class="cpp">b[0] = a[0];
+
+for(int i=0; i&lt;len; i++)
+  [i] = a[i+1]+a[i-1];
+
+b[len-1] = a[len-1];
+
+
+
+</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <small>For the example below both tested compilers: gcc 4.9 and clang 3.5
+            <strong>won't</strong> perform this optimization. Make sure that a compiler was able to apply optimization
+            to such a code pattern or do it manually.</small>
+          </section>
+
+          <section>
+            <h2>Advanced unswitching: Sentinels</h2>
+            <blockquote><b>Sentinels</b> are special dummy values placed in a data structure which are added to simplify
+            the logic of handling boundary conditions (in particular, handling of loop-exit tests
+            or elimination out-of-bound checks).</blockquote>
+
+            <p><strong>This optimization cannot be performed by the compiler <br/>because require changes in use of
+            data structures</strong></p>
+          </section>
+
+          <section>
+            <h2>Advanced unswitching: Sentinels</h2>
+            <p>Let's assume that array <strong><code>a</code></strong> contains two extra elements:
+            one &mdash; at the left <strong><code>a[-1]</code></strong>,
+             and one &mdash; at the right <strong><code>a[N]</code></strong>. With such assumptions the code can be
+             rewritten as follows.</p>
+
+            <table class="simple" style="font-size:0.85em;">
+              <colgroup>
+                <col/>
+                <col/>
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td style="padding:0;width:50%;">
+                   <pre><code class="cpp">for(int i=0; i&lt;len; i++)
+{
+  if (i == 0)
+    b[i] = a[i+1];
+  else if(i == len-1 )
+    b[i] = a[i-1];
+  else
+    b[i] = a[i+1]+a[i-1];
+}</code></pre>
+                  </td>
+                  <td>
+                   <pre><code class="cpp">// setup boundaries
+a[-1]  = 0;
+a[len] = 0;
+
+for (int i=0; i&lt;len; i++)
+  [i] = a[i+1] + a[i-1];
+
+
+
+</code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+          </section>
+        </section>
+
 
         <section>
           <section>
@@ -93,8 +474,8 @@
             <blockquote>replaces complex expressions with a simpler analogy</blockquote>
             <table>
               <colgroup>
-                <col width="50%"/>
-                <col width="50%"/>
+                <col style="width: 50%;"/>
+                <col style="width: 50%;"/>
               </colgroup>
               <tbody>
                 <tr>
@@ -123,11 +504,11 @@
           <section>
             <h2>Strength Reduction</h2>
             <pre style="font-size: 0.95em;" class="console"><span>$ gcc -march=armv7-a -mthumb -O3 -S -o 1.s \
-> -mfpu=neon-vfpv4 -mfloat-abi=softfp 1.c</span></pre></li>
+> -mfpu=neon-vfpv4 -mfloat-abi=softfp 1.c</span></pre>
             <table>
               <colgroup>
-                <col width="50%"/>
-                <col width="50%"/>
+                <col style="width: 50%;"/>
+                <col style="width: 50%;"/>
               </colgroup>
               <tbody>
                 <tr>
@@ -171,12 +552,12 @@
             <h2>Strength Reduction (advanced)</h2>
             <table style="width: 100%" class="simple">
               <colgroup>
-                <col width="50%"/>
-                <col width="50%"/>
+                <col style="width: 50%;"/>
+                <col style="width: 50%;"/>
               </colgroup>
               <tbody>
                 <tr>
-                  <td width="50%">
+                  <td style="width: 50%;">
                     <pre><code class="armasm">useManyPowf:
   push  {r3, lr}
   flds  s17, [sp, #56]
@@ -256,6 +637,67 @@
 
         <section>
           <section>
+          <h2>Loop-induction variable elimination</h2>
+          <blockquote>In most cases compiler is able to replace<br><i>address arithmetics</i> with <i>pointer arithmetics</i>.</blockquote>
+                  <pre><code class="cpp">void function(int* arr, int len)
+{
+  for (int i = 0; i &lt; len; i++)
+    arr[i] = 1;
+}</code></pre>
+                  <pre><code class="cpp">void function(int* arr, int len)
+{
+  for (int* p = arr; p &lt; arr + len; p++)
+      *p = 1;
+}</code></pre>
+          <pre style="font-size: 0.95em;" class="console"><span>$ gcc -march=armv7-a -mthumb -O1 -S -o 1.s \
+> -mfpu=neon-vfpv4 -mfloat-abi=softfp 1.c</span></pre>
+          </section>
+
+          <section>
+          <h2>Loop-induction variable elimination</h2>
+          <table class="simple">
+            <colgroup>
+              <col/>
+              <col/>
+            </colgroup>
+            <tbody>
+              <tr>
+                <td style="padding:0; width: 50%;">
+                  <pre><code class="armacm">  cmp r1, #0
+  ble .L1
+  mov r3,r0
+  add r0,r0,r1,lsl #2
+  movs  r2, #1
+.L3:
+  str r2, [r3], #4
+  cmp r3, r0
+  bne .L3
+.L1:
+  bx  lr</code></pre>
+                </td>
+                <td  style="padding:0;" >
+                  <pre><code class="armasm">
+  add r1,r0,r1,lsl #2
+  cmp r0, r1
+  bcs .L5
+  movs  r3, #1
+.L8:
+  str r3, [r0], #4
+  cmp r1, r0
+  bhi .L8
+.L5:
+  bx  lr</code></pre>
+                </td>
+              </tr>
+            </tbody>
+            </table>
+          <blockquote>Most hand-written <b>pointer optimizations</b> do not make sense with usage optimization levels
+            higher than O0.</blockquote>
+          </section>
+        </section>
+
+        <section>
+          <section>
             <h2>Auto-vectorization</h2>
             <blockquote><b>Auto-vectorization</b> is machine code generation<br> that takes an advantage of vector instructions.</blockquote>
             <ul>
@@ -276,7 +718,7 @@
             <pre><code class="cpp">void vectorizeMe(float *a, float *b, int len)
 {
   int i;
-  for (i = 0; i < len; i++)
+  for (i = 0; i &lt; len; i++)
     a[i] += b[i];
 }</code></pre>
             <pre style="font-size: 0.95em;" class="console"><span>$ gcc -march=armv7-a -mthumb -O3 -S -o 1.s \
@@ -284,7 +726,7 @@
 > -fopt-info-missed 1.c</span></pre>
             <p>But, NEON does not support full IEEE 754,<br>so gcc cannot vectorize the loop, what it told us</p>
             <pre style="font-size: 0.95em;" class="console"><span>1.c:64:3: note: not vectorized:
-relevant stmt not supported:_13 =_9+_12;</span>
+relevant stmt not supported:_13 =_9+_12;</span></pre>
           </section>
 
           <section>
@@ -333,7 +775,7 @@ relevant stmt not supported:_13 =_9+_12;</span>
 {
   float *a=__builtin_assume_aligned(a_, 16);
   float *b=__builtin_assume_aligned(b_, 16);
-  for (int i = 0; i < len; i++)
+  for (int i = 0; i &lt; len; i++)
     a[i] += b[i];
 }</code></pre>
             Optimizer's report shrinks.
@@ -351,10 +793,10 @@ relevant stmt not supported:_13 =_9+_12;</span>
             <blockquote>Replaces functional call to function body itself.</blockquote>
             <pre><code class="cpp">int square(int x) { return x*x; }
 
-for (int i = 0; i < len; i++)
+for (int i = 0; i &lt; len; i++)
   arr[i] = square(i);</code></pre>
             <p>Becomes</p>
-            <pre><code class="cpp">for (int i = 0; i < len; i++)
+            <pre><code class="cpp">for (int i = 0; i &lt; len; i++)
     arr[i] = i*i;</code></pre>
             <p><strong>Enables all further optimizations.</strong><br>
             Machine-independent, interprocedural.</p>
@@ -372,8 +814,8 @@ for (int i = 0; i < len; i++)
   add x0, x0, 1
   cmp x0, x1
   bne .L2</code></pre>
-            <p>Let's compile the code with vector extension enabled <strong>
-            <pre style="font-size: 0.95em;" class="console">-march=armv8-a+simd</pre></strong></p>
+            <p>Let's compile the code with vector extension enabled</p>
+            <pre style="font-size: 0.95em;" class="console">-march=armv8-a+simd</pre>
           </section>
 
           <section>
@@ -396,7 +838,7 @@ for (int i = 0; i < len; i++)
         <section>
 
           <section>
-            <h2>Filling/copying memory blocks</h2>
+            <h2>Built-in detection</h2>
             <p>Compiler automatically uses the library functions <code>memset</code> and <code>memcpy</code>
             to initialize and copy memory blocks</p>
             <pre style="font-size: 0.7em;"><code style="max-height:720px;" data-trim class="cpp" >static char a[100000];
@@ -498,7 +940,7 @@ sum = 7.29569e+08
 real  0m24.550s</span></pre></li>
               <li>Compile it with <b>O1</b>: <b>~3.26 speedup</b>
                 <pre style="font-size: 0.8em;" class="console"><span>$ gcc -std=c99 -Wall -O1 flags-dp.c -o flags-dp
-$ time ./flags-dp</code></strong>
+$ time ./flags-dp
 sum = 7.29569e+08
 real  0m7.529s</span></pre></li>
             </ol>
@@ -514,7 +956,7 @@ sum = 7.29569e+08
 real  0m6.069s</span></pre></li>
               <li>Compile it with <b>O3</b>:  <b>~1.00 speedup</b>
                 <pre style="font-size: 0.8em;" class="console"><span>$ gcc -std=c99 -Wall -O3 flags-dp.c -o flags-dp
-$ time ./flags-dp</code></strong>
+$ time ./flags-dp
 sum = 7.29569e+08
 real  0m6.067s</span></pre></li>
             </ol>
@@ -553,7 +995,7 @@ sum = 288231861405089791
 real  0m18.750s</span></pre></li>
               <li>Compile it with <b>O1</b>: <b>~2.64 speedup</b>
                 <pre style="font-size: 0.8em;" class="console"><span>$ gcc -std=c99 -Wall -O1 flag.c -o flags
-$ time ./flags</code></strong>
+$ time ./flags
 sum = 288231861405089791
 real  0m7.092s</span></pre></li>
             </ol>
@@ -569,7 +1011,7 @@ sum = 288231861405089791
 real  0m7.300s</span></pre></li>
               <li>Compile it with <b>O3</b>:  <b>~1.00 speedup</b>
                 <pre style="font-size: 0.8em;" class="console"><span>$ gcc -std=c99 -Wall -O3 flags.c -o flags
-$ time ./flags</code></strong>
+$ time ./flags
 sum = 288231861405089791
 real  0m7.082s</span></pre></li>
             </ol>
@@ -671,7 +1113,7 @@ real  0m7.082s</span></pre></li>
 int main ()
 {
   double a = 1./0x80000000U, s = -1.;
-  for (double i=0; i<=0x80000000U-8; i += 8)
+  for (double i=0; i&lt;=0x80000000U-8; i += 8)
   {
     s+=power((i+0)*a,0);s+=power((i+1)*a,1);
     s+=power((i+2)*a,2);s+=power((i+3)*a,3);
@@ -680,12 +1122,11 @@ int main ()
   }
   printf ("sum = %g\n", s);
 }</code></pre>
-            <p><pre style="font-size: 0.7em;" class="console"><span>$ gcc -std=c99 -Wall -O3 flags-dp-tuned.c -o flags-dp-tuned
-$ time ./flags-dp-tuned</code></strong>
+            <pre style="font-size: 0.7em;" class="console"><span>$ gcc -std=c99 -Wall -O3 flags-dp-tuned.c -o flags-dp-tuned
+$ time ./flags-dp-tuned
 sum = 7.29569e+08
 real  0m2.448s</span></pre>
             <b>Speedup is ~2.48x.</b>
-            </p>
           </section>
 
           <section>
@@ -699,7 +1140,7 @@ real  0m2.448s</span></pre>
 int main ()
 {
   int64_t sum = -1;
-  for (unsigned i=0; i<=0x80000000U-8; i += 8)
+  for (unsigned i=0; i&lt;=0x80000000U-8; i += 8)
   {
     sum+=power(i+0, 0); sum+=power(i+1,1);
     sum+=power(i+2, 2); sum+=power(i+3,3);
@@ -709,7 +1150,7 @@ int main ()
   printf ("sum = %ld\n", sum);
 }</code></pre>
             <pre style="font-size: 0.7em;" class="console"><span>$ gcc -std=c99 -Wall -O3 flags-tuned.c -o flags-tuned
-$ time ./flags-tuned</code></strong>
+$ time ./flags-tuned
 sum = 288231861405089791
 real  0m1.286s</span></pre>
             <b>Speedup is ~5.5x.</b>
@@ -722,7 +1163,7 @@ real  0m1.286s</span></pre>
             <h2>Detailed analysis</h2>
             <p>This is how the compiler sees the outer loop<br> after inner loop inlining</p>
             <pre style="font-size: 0.7em;" ><code class="cpp">int64_t sum = -1;
-for (unsigned i=0; i<=0x80000000U-8; i += 8)
+for (unsigned i=0; i&lt;=0x80000000U-8; i += 8)
 {
   int d = (int)i;
   sum+=1;
@@ -743,7 +1184,7 @@ for (unsigned i=0; i<=0x80000000U-8; i += 8)
   movl  $4, %ebx
   movl  $3, %r9d
   movl  $2, %r8d
-  movq  $-1, %rax // <-accumulator
+  movq  $-1, %rax // &lt;-accumulator
 .L3:
   // loop body
   addl  $8, %r8d
@@ -809,18 +1250,36 @@ addq  %rdx, %rax</code></pre>
           </section>
         </section>
 
-
+        <section>
         <section>
           <h2>Summary</h2>
-          <ul>
-            <li></li>
-          </ul>
+            <ul style="width: 100%">
+              <li>Copy propagation and other basic transformations enables more complicated ones</li>
+              <li>Hoisting loop-invariant code and other ways of strength reduction techniques minimizes number of operations</li>
+              <li>Compiler is very conservative to hoist floating point math</li>
+              <li>Scalarization and loop unswitching makes loop bodies plane</li>
+              <li>Loop peeling compiler capabilities are steel pure, use sentinels technique to eliminate extra checks
+              and control flow</li>
+              <li>Most hand-written pointer optimizations do not make sense with usage of optimization levels higher than O0</li>
+            </ul>
+        </section>
+        <section>
+          <h2>Summary</h2>
+            <ul style="width: 100%">
+              <li><code>__restrict</code> and <code>__builtin_assume_aligned</code> keywords only eliminate some loop
+              versioning, but are not very useful from the performance perspective nowadays</li>
+              <li>Functional body inlining is essential for loop further loop optimization</li>
+              <li>Compiler will detect <code>memcpy</code> and <code>memset</code>, even if you implement them manually
+              and call library function instead. Library functions are usually more efficient</li>
+              <li>Use knowledge about semantics of your code to help a compiler optimize it</li>
+            </ul>
+        </section>
         </section>
 
         <section>
           <h1>THE END</h1>
-          <img class="simple" src="images/popt/infinity.png">
-          <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015-2016</h4s>
+          <img alt="The end" class="simple" src="images/popt/infinity.png">
+          <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015-2016</h4>
         </section>
             </div>
         </div>
