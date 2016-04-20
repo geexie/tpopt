@@ -1,119 +1,107 @@
-    <!doctype html>
-    <html lang="en">
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Pragmatic optimization in modern programming</title>
+    <meta name="description" content="Pragmatic optimization in modern programming">
+    <meta name="author" content="geek">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/beige.css" id="theme">
+    <link rel="stylesheet" href="css/customization.css">
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <link rel="shortcut icon" href="images/ico/favicon.ico">
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+    <style type="text/css">
+    span.opt0 {
+      color: green;
+    }
 
-        <head>
-            <meta charset="utf-8">
+    span.opt1 {
+      color: yellow;
+    }
 
-            <title>Pragmatic optimization in modern programming</title>
+    span.opt2 {
+      color: red;
+    }
+    </style>
 
-            <meta name="description" content="Pragmatic optimization in modern programming">
-            <meta name="author" content="geek">
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
 
-            <meta name="apple-mobile-web-app-capable" content="yes">
-            <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h1>Pragmatic optimization</h1>
+          <h2>In modern programming</h2>
+          <h3>Demystifying a compiler</h3>
+          <p>
+            <small>Created by
+              <a href="https://github.com/cuda-geek">Marina (geek) Kolpakova</a>
+              for
+              <a href="unn.ru">UNN</a>
+              / 2015-2016
+            </small>
+          </p>
+        </section>
 
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
-
-            <link rel="stylesheet" href="css/reveal.css">
-            <link rel="stylesheet" href="css/theme/beige.css" id="theme">
-            <link rel="stylesheet" href="css/customization.css">
-
-            <!-- Code syntax highlighting -->
-            <link rel="stylesheet" href="lib/css/zenburn.css">
-
-            <!-- <link rel="shortcut icon" href="images/ico/favicon.ico"> -->
-
-            <!-- Printing and PDF exports -->
-            <script>
-                var link = document.createElement( 'link' );
-                link.rel = 'stylesheet';
-                link.type = 'text/css';
-                link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-                document.getElementsByTagName( 'head' )[0].appendChild( link );
-            </script>
-
-            <style type="text/css">
-            span.opt0 {
-              color: green;
-            }
-
-            span.opt1 {
-              color: yellow;
-            }
-
-            span.opt2 {
-              color: red;
-            }
-            </style>
-
-            <!--[if lt IE 9]>
-            <script src="lib/js/html5shiv.js"></script>
-            <![endif]-->
-        </head>
-
-      <body>
-        <div class="reveal">
-          <div class="slides">
-            <section>
-              <h1>Pragmatic optimization</h1>
-              <h2>In modern programming</h2>
-              <h3>Demystifying a compiler</h3>
-              <p>
-                <small>Created by
-                  <a href="https://github.com/cuda-geek">Marina (geek) Kolpakova</a>
-                  for
-                  <a href="unn.ru">UNN</a>
-                  / 2015-2016
-                </small>
-              </p>
-            </section>
-
-            <section>
-              <h2>Course Topics</h2>
+        <section>
+          <h2>Course Topics</h2>
+          <ul>
+            <li><strong>Pragmatics</strong>
               <ul>
-                <li><strong>Pragmatics</strong>
-                  <ul>
-                    <li>Ordering optimization approaches</li>
-                    <li><b>Demystifying a compiler</b></li>
-                    <li style="margin-bottom: 20px;">Mastering compiler optimizations</li>
-                  </ul>
-                </li>
-    <!--             <li><strong>Computer Architectures</strong>
-                  <ul>
-                    <li>Modern architecture families</li>
-                    <li>Cache organization</li>
-                    <li style="margin-bottom: 20px;">Instruction scheduling</li>
-                  </ul>
-                </li> -->
-    <!--             <li><strong>Advanced capabilities</strong>
-                  <ul>
-                    <li>SIMD extensions</li>
-                    <li>Specific co-processors</li>
-                  </ul>
-                </li> -->
+                <li>Ordering optimization approaches</li>
+                <li><b>Demystifying a compiler</b></li>
+                <li style="margin-bottom: 20px;">Mastering compiler optimizations</li>
               </ul>
-            </section>
-
-            <section>
-              <h2>Outline</h2>
+            </li>
+<!--             <li><strong>Computer Architectures</strong>
               <ul>
-                <li>Compilation trajectory</li>
-                <li>Intermediate language</li>
-                <li>Dealing with local variables</li>
-                <li>link-time and whole program optimization</li>
-                <li>Optimization levels</li>
-                <li>Compiler optimization taxonomies
-                  <ul>
-                    <li>Classic</li>
-                    <li>Scope</li>
-                    <li>Code pattern</li>
-                  </ul>
-                </li>
-                <li>How to get the feedback from optimization?</li>
-                <li>Compiler optimization challenges</li>
-                <li>Summary</li>
+                <li>Modern architecture families</li>
+                <li>Cache organization</li>
+                <li style="margin-bottom: 20px;">Instruction scheduling</li>
               </ul>
-            </section>
+            </li> -->
+<!--             <li><strong>Advanced capabilities</strong>
+              <ul>
+                <li>SIMD extensions</li>
+                <li>Specific co-processors</li>
+              </ul>
+            </li> -->
+          </ul>
+        </section>
+
+        <section>
+          <h2>Outline</h2>
+          <ul>
+            <li>Compilation trajectory</li>
+            <li>Intermediate language</li>
+            <li>Dealing with local variables</li>
+            <li>link-time and whole program optimization</li>
+            <li>Optimization levels</li>
+            <li>Compiler optimization taxonomies
+              <ul>
+                <li>Classic</li>
+                <li>Scope</li>
+                <li>Code pattern</li>
+              </ul>
+            </li>
+            <li>How to get the feedback from optimization?</li>
+            <li>Compiler optimization challenges</li>
+            <li>Summary</li>
+          </ul>
+        </section>
 
             <section>
               <h2>Executable generation phases</h2>
@@ -1288,15 +1276,15 @@ int caller()
 
               <section>
                 <h2>Function calls</h2>
-                  <table style="width:100%;" class="simple">
-                    <colgroup>
-                      <col/>
-                      <col/>
-                    </colgroup>
-                    <tbody>
-                      <tr>
-                        <td>
-                          <pre><code class="cpp">int callee(int i);
+                <table style="width:100%;" class="simple">
+                  <colgroup>
+                    <col/>
+                    <col/>
+                  </colgroup>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <pre><code class="cpp">int callee(int i);
 int caller()
 {
   int s=0, i=0;
@@ -1307,9 +1295,9 @@ int caller()
 }
 
     </code></pre>
-                        </td>
-                        <td>
-                          <pre><code class="cpp">int callee(int i);
+                      </td>
+                      <td>
+                        <pre><code class="cpp">int callee(int i);
 int caller()
 {
   int s0=0, s1=0, i=0;
@@ -1320,13 +1308,13 @@ int caller()
   }
   return s0 + s1;
 }</code></pre>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table><br/>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <br>
                 <h3>Are they equal?</h3>
               </section>
-
 
               <section>
                 <h2>Pure functions</h2>
@@ -1342,6 +1330,7 @@ int caller()
                   </ol>
                 </blockquote>
               </section>
+
               <section>
                 <h2>Pure functions</h2>
                 <ul>
@@ -1376,13 +1365,12 @@ int caller()
               </section>
             </section>
 
-            <section>
-              <section>
-                <h2>Floating point</h2>
-                <ul>
-                  <li>Floating point arithmetics is not associative,<br> so <b>A+(B+C) != (A+B)+C</b></li>
-                  <li>A compiler is very conservative about floating point!</li>
-                </ul>
+          <section>
+            <h2>Floating point</h2>
+            <ul>
+              <li>Floating point arithmetics is not associative,<br> so <b>A+(B+C) != (A+B)+C</b></li>
+              <li>A compiler is very conservative about floating point!</li>
+            </ul>
             <pre><code class="cpp">void associativityCheck (void)
 {
   double x = 3.1415926535897931;
@@ -1390,108 +1378,99 @@ int caller()
   double b = -(1.0e15 - 1.0);
   printf("%f %f\n", x*(a + b), x*a + x*b );
 }</code></pre>
-              <pre class="console" style="font-size: 0.9em;"><span>$ gcc check.c -o check ; ./check
+            <pre class="console" style="font-size: 0.9em;"><span>$ gcc check.c -o check ; ./check
     3.141593 3.000000</span></pre>
-                <p>Such situation is known as <b>catastrophic cancellation</b> </p>
-              </section>
-            </section>
+            <p>Such situation is known as <b>catastrophic cancellation</b> </p>
+          </section>
 
+          <section>
+            <h2>More optimization challenges</h2>
+            <ul>
+              <li>Branches inside a loop</li>
+              <li>Exceptions</li>
+              <li>Accesses to storage type global variables</li>
+              <li>Inline assembly</li>
+              <li><code>volatile</code> keyword</li>
+            </ul>
+          </section>
+
+          <section>
             <section>
-              <h2>More optimization challenges</h2>
+              <h2>Summary</h2>
               <ul>
-                <li>Branches inside a loop</li>
-                <li>Exceptions</li>
-                <li>Accesses to storage type global variables</li>
-                <li>Inline assembly</li>
-                <li><code>volatile</code> keyword</li>
+                <li>Source code does through lexical, syntax, semantic analysis, as well as
+                IR generation, optimization before producing target machine code </li>
+                <li>Backend and frontend simplify compiler development</li>
+                <li>Intermediate language makes compiler optimizations reusable across broad range of languages and targets</li>
+                <li>IL can be Language-specific or Language independent</li>
+                <li>Triples and Quadruples are widely used as<br> language-independent IR</li>
+                <li>All the compiler optimizations are done on IR</li>
+                <li><strong>Register allocation goes after IR optimization,<br>local-variable reuse is pointless nowadays!</strong></li>
               </ul>
             </section>
 
             <section>
-              <section>
-                <h2>Summary</h2>
-                <ul>
-                  <li>Source code does through lexical, syntax, semantic analysis, as well as
-                  IR generation, optimization before producing target machine code </li>
-                  <li>Backend and frontend simplify compiler development</li>
-                  <li>Intermediate language makes compiler optimizations reusable across broad range of languages and targets</li>
-                  <li>IL can be Language-specific or Language independent</li>
-                  <li>Triples and Quadruples are widely used as<br> language-independent IR</li>
-                  <li>All the compiler optimizations are done on IR</li>
-                  <li><strong>Register allocation goes after IR optimization,<br>local-variable reuse is pointless nowadays!</strong></li>
-                </ul>
-              </section>
-              <section>
-                <h2>Summary</h2>
-                <ul>
-                  <li>LTO allows do optimizations during linking</li>
-                  <li>WHOPR allows globally optimize whole binary</li>
-                  <li>Compiler usually supports multiple optimization levels</li>
-                  <li>Compiler optimizations are split into machine-dependent and machine-independent groups</li>
-                  <li>By scope compiler optimizations are split into interprocedural, intraprocedural, global, local and peephole</li>
-                  <li>The most common targets are dependency chains, branches, loops</li>
-                  <li>Compiler optimization is a multi-phase iterative process</li>
-                  <li>Performing one optimization allows many other</li>
-                  <li>Most optimizations need certain order of application</li>
-                </ul>
-              </section>
-              <section>
-                <h2>Summary</h2>
-                <ul>
-                  <li>Checking wall-time, assembly or optimizer's report are the most common ways to get optimization feedback</li>
-                  <li>Wall time is the most important metric to optimize</li>
-                  <li>Assembler is a must-have to check the compiler <br>
-                    but it is rarely used to write low-level code</li>
-                  <li>Inspect optimizer's report to demystify its "habits"</li>
-                  <li><strong>Stick to the strict aliasing rule</strong></li>
-                  <li>Clean code is not enough.. <strong>Write pure code!</strong></li>
-                  <li>Compilers are usually very conservative<br>optimizing floating point math</li>
-                </ul>
-              </section>
+              <h2>Summary</h2>
+              <ul>
+                <li>LTO allows do optimizations during linking</li>
+                <li>WHOPR allows globally optimize whole binary</li>
+                <li>Compiler usually supports multiple optimization levels</li>
+                <li>Compiler optimizations are split into machine-dependent and machine-independent groups</li>
+                <li>By scope compiler optimizations are split into interprocedural, intraprocedural, global, local and peephole</li>
+                <li>The most common targets are dependency chains, branches, loops</li>
+                <li>Compiler optimization is a multi-phase iterative process</li>
+                <li>Performing one optimization allows many other</li>
+                <li>Most optimizations need certain order of application</li>
+              </ul>
             </section>
 
             <section>
-              <h1>THE END</h1>
-              <img alt="The end" class="simple" src="images/popt/infinity.png">
-              <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015-2016</h4>
+              <h2>Summary</h2>
+              <ul>
+                <li>Checking wall-time, assembly or optimizer's report are the most common ways to get optimization feedback</li>
+                <li>Wall time is the most important metric to optimize</li>
+                <li>Assembler is a must-have to check the compiler <br>
+                  but it is rarely used to write low-level code</li>
+                <li>Inspect optimizer's report to demystify its "habits"</li>
+                <li><strong>Stick to the strict aliasing rule</strong></li>
+                <li>Clean code is not enough.. <strong>Write pure code!</strong></li>
+                <li>Compilers are usually very conservative<br>optimizing floating point math</li>
+              </ul>
             </section>
+          </section>
 
-          </div>
-        </div>
+          <section>
+            <h1>THE END</h1>
+            <img alt="The end" class="simple" src="images/popt/infinity.png">
+            <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015-2016</h4>
+          </section>
+      </div>
+    </div>
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+    <script>
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: false,
+        slideNumber: true,
 
-            <script src="lib/js/head.min.js"></script>
-            <script src="js/reveal.js"></script>
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
 
-            <script>
+        // Optional reveal.js plugins
+        dependencies: [
+        { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+        { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+        { src: 'plugin/zoom-js/zoom.js' , async: true  },
+        { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
 
-                // Full list of configuration options available at:
-                // https://github.com/hakimel/reveal.js#configuration
-                Reveal.initialize({
-                    controls: true,
-                    progress: true,
-                    history: true,
-                    center: false,
-                    slideNumber: true,
-
-                    // parallaxBackgroundImage: "https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg",
-                    // parallaxBackgroundSize: "2100px 900px",
-                    // parallaxBackgroundHorizontal: 200,
-                    // parallaxBackgroundVertical: 50,
-
-                    transition: 'slide', // none/fade/slide/convex/concave/zoom
-
-                    // Optional reveal.js plugins
-                    dependencies: [
-                        { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
-                        { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-                        { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-                        { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-                        { src: 'plugin/zoom-js/zoom.js' , async: true  },
-                        { src: 'plugin/notes/notes.js', async: true }
-                    ]
-                });
-
-            </script>
-
-        </body>
-    </html>
+    </script>
+  </body>
+</html>

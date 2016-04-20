@@ -1281,42 +1281,33 @@ addq  %rdx, %rax</code></pre>
           <img alt="The end" class="simple" src="images/popt/infinity.png">
           <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015-2016</h4>
         </section>
-            </div>
-        </div>
+      </div>
+    </div>
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+    <script>
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: false,
+        slideNumber: true,
 
-        <script src="lib/js/head.min.js"></script>
-        <script src="js/reveal.js"></script>
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
 
-        <script>
+        // Optional reveal.js plugins
+        dependencies: [
+        { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+        { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+        { src: 'plugin/zoom-js/zoom.js' , async: true  },
+        { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
 
-            // Full list of configuration options available at:
-            // https://github.com/hakimel/reveal.js#configuration
-            Reveal.initialize({
-                controls: true,
-                progress: true,
-                history: true,
-                center: false,
-                slideNumber: true,
-
-                // parallaxBackgroundImage: "https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg",
-                // parallaxBackgroundSize: "2100px 900px",
-                // parallaxBackgroundHorizontal: 200,
-                // parallaxBackgroundVertical: 50,
-
-                transition: 'slide', // none/fade/slide/convex/concave/zoom
-
-                // Optional reveal.js plugins
-                dependencies: [
-                    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
-                    { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-                    { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-                    { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-                    { src: 'plugin/zoom-js/zoom.js' , async: true  },
-                    { src: 'plugin/notes/notes.js', async: true }
-                ]
-            });
-
-        </script>
-
-    </body>
+    </script>
+  </body>
 </html>
