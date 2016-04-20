@@ -75,6 +75,19 @@ body {
   width: 100%;
 }
 
+.rotate
+{
+  transform: rotate(-90.0deg);
+  -moz-transform: rotate(-90.0deg);
+  -webkit-transform: rotate(-90.0deg);
+  -o-transform: rotate(-90.0deg);
+  filter: progid: DXImageTransform.Microsoft.BasicImage(rotation=0.083);
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)";
+  width: 20px;
+  top: 400px;
+}
+
+
 /***********************
 *    Debug settings    *
 ***********************/
