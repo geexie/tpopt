@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Pragmatic optimization in modern programming</title>
+    <meta name="description" content="Pragmatic optimization in modern programming">
+    <meta name="author" content="geek">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/beige.css" id="theme">
+    <link rel="stylesheet" href="css/customization.css">
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <link rel="shortcut icon" href="images/ico/favicon.ico">
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h1>Pragmatic optimization</h1>
+          <h2>In modern programming</h2>
+          <h3>What every optimizer should know about caches?</h3>
+          <p>
+            <small>Created by
+              <a href="https://github.com/cuda-geek">Marina (geek) Kolpakova</a>
+              for
+              <a href="unn.ru">UNN</a>
+              / 2015-2016
+            </small>
+          </p>
+        </section>
+
+        <section>
+          <h2>Course Topics</h2>
+          <ul>
+            <li><strong>Pragmatics</strong>
+              <ul>
+                <li>Ordering optimization approaches</li>
+                <li>Demystifying a compiler</li>
+                <li style="margin-bottom: 20px;">Mastering compiler optimizations</li>
+              </ul>
+            </li>
+            <li><strong>Computer Architectures</strong>
+              <ul>
+                <li>Modern computer architecture concepts</li>
+                <li><b>What every optimizer should know about caches?</b></li>
+                <li style="margin-bottom: 20px;">Instruction scheduling</li>
+              </ul>
+            </li>
+<!--             <li><strong>Advanced capabilities</strong>
+              <ul>
+                <li>SIMD extensions</li>
+                <li>Specific co-processors</li>
+              </ul>
+            </li> -->
+          </ul>
+        </section>
+
+        <section>
+          <h2>Outline</h2>
+          <ul>
+            <li></li>
+            <li>summary</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>The memory-processor gap</h2>
+          Processor advances much faster than memory.
+          <figure>
+            <img style="width: 60%" class="simple" src="images/popt/hp-mem.jpg">
+            <figcaption><small>Image source Hennessey &amp; Paterson.</small></figcaption>
+          </figure>
+          <strong>The cache hierarchy goal is mitigating the gap between latencies
+          of a memory accesses and processor operations</strong>
+        </section>
+
+        <section>
+          <h2>Locality principals</h2>
+          <dl>
+            <dt><b>Temporal locality</b></dt>
+            <dd>relies on the fact that <strong>recently accessed items</strong> are <strong>likely</strong>
+            to be accessed in the <strong>nearest future</strong>. If address <b><code>M(n)</code></b>
+            is accessed at time <b><code>t</code></b>, it is likely that <b><code>M(n)</code></b>
+            will be used again at time <b><code>t+</code>&epsilon;</b> , where <b>&epsilon;</b>
+            is small.</dd>
+            <dt><b>Spatial locality</b></dt>
+            <dd>relies on the fact that items whose addresses are <strong>near each other likely to accessed close
+            together in time</strong>. If address <b><code>M(n)</code></b> is accessed it is likely that
+            <b><code>M(n+&epsilon;)</code></b> will be used, where <b><code>&epsilon;</code></b> is small.</dd>
+          </dl>
+        </section>
+
+        <section>
+          <section>
+            <h2>Cache hierarchy</h2>
+            <ul>
+              <li><b>Cache</b> is a small fast memory usually integrated on the chip that holds recently used data or instructions
+              for further use.</li>
+              <li>Accessing cache is slower than accessing registers but faster than main memory.</li>
+              <li>Modern computers have memory of different types and properties organized in hierarchy, several levels
+              of caches lay between processor and main memory.</li>
+              <li> Hierarchy offers a reasonable tread off between speed, size and cost.</li>
+              <li>Cache may offer some shrink in power consumption.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Cache hierarchy</h2>
+            <ul>
+              <li>Modern architectures belong to Harvard class so have data and instruction cache separated.</li>
+              <li>Cache is usually marked as <b><code>Lx</code></b> for referring to any type of it. <b><code>Dx</code></b>,
+               for <strong>data</strong> cache and <b><code>Ix</code></b> for <strong>instruction</strong> cache.</li>
+              <li>L1 is used to call the closest to processor level of cache.</li>
+            </ul>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>terminology</h2>
+            <dl>
+              <dt><b>Access time</b></dt>
+              <dd>is the time from when a read or write is requested until it arrives at its destination.</dd>
+
+              <dt><b>Cycle time</b></dt>
+              <dd>is the minimum time between requests to memory.</dd>
+
+              <dt><b>Cache hit</b></dt>
+              <dd>is the situation when the requested data is in the cache.</dd>
+
+              <dt><b>Cache miss</b></dt>
+              <dd>is the situation when the requested data isn't in the cache. Upon a cache miss, the data is retrieved
+               from main memory (or a higher level of cache) and placed in it.</dd>
+            </dl>
+          </section>
+
+          <section>
+            <h2>terminology</h2>
+            <dl>
+              <dt><b>Cache miss rate</b></dt>
+              <dd>is the fraction of cache accesses that result in a miss.</dd>
+
+              <dt><b>Local miss rate</b></dt>
+              <dd>is the number of misses in a cache divided by the total number of memory access to this cache</dd>
+
+              <dt><b>Global miss rate</b></dt>
+              <dd>is the number of misses in a cache divided by the total number of memory accesses generated</dd>
+            </dl>
+          </section>
+
+          <section>
+            <h2>terminology</h2>
+            <dl>
+              <dt><b>Cache miss penalty</b></dt>
+              <dd>is the time required for serving a cache miss<br/>(depends on the latency and bandwidth of the memory).</dd><br/>
+
+              <dt><b>Memory stall cycles</b></dt>
+              <dd>is the cycles during which a CPU is stalled waiting for a memory access.</dd>
+            </dl>
+          </section>
+        </section>
+
+<!--         Using multiple levels of cache allows a small fast cache to keep pace with the
+CPU, while slower larger caches can be used to reduce the miss penalty since
+the next level cache can be used to capture many accesses that would go to
+main memory.
+The local miss rate is large for higher level caches because the first level
+cache benefits the most from data locality.  Thus a global miss rate that
+indicates what fraction of the memory access that leave the CPU go all the way
+to memory is a more useful measure. -->
+
+      <section>
+
+        <section>
+          <h2>Cache properties </h2>
+          <ul>
+            <li>Modern processors have from 1 to 4 levels of caches
+              <ul>
+                <li><b>Inclusive</b> caches duplicates the data from higher level cache in lower levels</li>
+                <li><b>Exclusive</b> caches contains data only in one level of cache</li>
+                <li>Most caches are <b>inclusive</b> which simplifies coherency handling.</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Cache properties </h2>
+          <ul>
+            <li>Data transfer unit between registers and L1 cache is usually in between 1-16 bytes</li>
+            <li><b>Cache line</b> is the smallest transfer unit between main memory(or higher level cache) and cache
+            (typically 32, 64 bytes, sometimes 128 bytes and more). Cache line is also unit of storage
+            allocation in cache</li>
+            <li>Whole cache is split into <b>sets</b> equal in size.</li>
+            <li>Each line has a <b>tag</b> that indicates the address in memory from which the line has been copied.</li>
+          </ul>
+        </section>
+      </section>
+
+
+        <section>
+          <h2>Associativity</h2>
+          <ul>
+            <li><b>Cache associativity</b> is the number of unique places in a cache where any given memory item can reside.</li>
+            <li>Cache hit is detected through an <b>associative search</b> of all the tags.</li>
+          </ul>
+          <blockquote>Consequently, there is a <b>cache size/hit latency tread off</b>, large caches can keep mere data,
+            but need more time for tag search.</blockquote>
+        </section>
+
+        <section>
+          <h2>Associativity</h2>
+          <ul>
+            <li>In an <b>N-way set associative</b> cache, any cache line from memory can map to any of the
+            N locations in a <b>set</b>. 4-/8- or 16-way associative caches are often used in modern chips.</li>
+            <li>1 way set associative cache is called <b>direct mapped</b>. Direct mapped means only one location,
+            and so high probability of conflict, but tag search is very fast.</li>
+            <li>A fully associative cache is one in which a cache line can be placed anywhere in cache. Full association
+            is feasible for very small size caches only (TLB's).</li>
+          </ul>
+          <blockquote>Higher associativity gives faster caches, but costly in terms of gates and complexity
+          (power and performance).</blockquote>
+        </section>
+
+        <section>
+          <section>
+            <h2>Direct Mapped</h2>
+            <img class="simple" width="50%" src="images/popt/dmc.svg"/>
+          </section>
+          <section>
+            <h2>Set-associative</h2>
+            <img class="simple" width="50%" src="images/popt/sac.svg"/>
+          </section>
+          <section>
+            <h2>Fully-associative</h2>
+            <img class="simple" width="50%" src="images/popt/fac.svg"/>
+          </section>
+        </section>
+
+        <section>
+          <h2>Cache misses taxonomy</h2>
+          <ol>
+            <li><b>Compulsory</b> miss refers to a miss for the <i>very first</i> access for a cache line,
+            which is unavoidable for any program.</li>
+
+            <li><b>Capacity</b> miss is the situation than the cache <i>cannot contain all the cache lines</i> needed
+            during execution of a program. This type is inevitable for any production program.</li>
+
+            <li><b>Conflict</b> miss occurs when a block is to be discarded and later retrieved because too many cache
+            lines mapped to the <i>same set</i>. It is only applicable to a (less than fully) set associative caches.
+            Conflict misses may in the worst case lead to a <b>cache trashing</b> where a cache line is repeatedly
+            brought in, and then immediately thrown out because of a conflict miss</li>
+
+            <!-- miss forced by hardware coherence protocol -->
+            <li><b>Coherency</b> miss occurs when a block must be reloaded from the memory or lower level of cache to keep data
+            coherent between multiple processors in <abbr title="Symmetric Multi Processor">SMP</abbr> system. </li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>Replacement policy</h2>
+          <blockquote style="width:100%;"><b>Replacement policy</b> defines which cache line is to be replaced under a miss.</blockquote>
+          <ul>
+            <li><b>Random</b> evicts cache lines without any preference or specific order</li>
+            <li><b>Round robin (RR)</b> evicts cache lines in the FIFO order</li>
+            <li><b>Least Recently Used (LRU)</b> evicts cache line which was not in use for the longest time.
+            It performs better than random or RR but is more difficult to implement</li>
+            <li><b>Pseudo-LRU</b> evicts one of the least recently used. close to LRU in term of cache efficiency,
+            but much faster to operate.</li>
+            <li><b>Belady</b> evicts block that will be used the furthest in future. Unreachable optimum.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Write strategy</h2>
+          <blockquote><b>Write Strategy</b> is a strategy to maintain coherence between caches in a hierarchy
+          and the main memory while write occur.</blockquote>
+          <p>Data is in the cache (write hit)</p>
+          <dl>
+            <dt><b>Write through</b></dt>
+            <dd>The data is written through all cache hierarchy up to main memory. Memory and cache are always in
+            coherent state. Uniform latency on misses, but extra bus traffic.</dd>
+            <dt><b>Write back</b></dt>
+            <dd>The data is written only to the cache line in the cache. The modified cache line
+            is written to memory only when necessary (it need to be replaced by another one). Memory and caches can be
+            in not coherent state. Non-uniform miss latency
+              <ul>
+                <li><b>Clean miss</b> results in one transaction with lower level (fill)</li>
+                <li><b>Dirty miss</b> results in two transactions with lower level (writeback & fill)</li>
+              </ul>
+            </dd>
+          </dl>
+        </section>
+
+        <section>
+          <h2>Allocation policy</h2>
+          <blockquote><b>Allocation policy</b> is a policy of a new cache allocation<br> if the write miss occurs.
+          </blockquote>
+          <p>Data is not in the cache (write miss)</p>
+
+          <dl>
+            <dt><b>Write-allocate</b> (is to be used with write back)</dt>
+            <dd>Allocate a line in a cache to store by retrieving the data from lower level of cache and update the value.
+            It requires <strong>additional bandwidth</strong>, but may <strong>decrease miss rate</strong> for reads.</dd>
+
+            <dt><b>Write-non-allocate</b> (is to be used with write through)</dt>
+            <dd>By pass the cache and store the data directly to the memory or lower level of cache. No extra bandwidth
+            is added, but might result in miss rate increase.</dd>
+          </dl>
+        </section>
+
+        <section>
+          <h2>Write buffer</h2>
+          <blockquote><b>Write buffer</b> is a buffer between the current level of cache and the next level of
+          cache or memory</blockquote>
+          <ul>
+            <li>Store latency is not uniform ( e.g. if a cache line must be read or allocated)</li>
+            <li>Buffering writes is used to avoid stalling the CPU. Especially helpful for write-back</li>
+            <li>Write buffer (store buffer/write-behind buffer) is a FIFO queue of incomplete stores</li>
+            <li>intermediate values can be forwarded for use upon request</li>
+          </ul>
+
+<!-- Store A to service load of a value that is still in write buffer avoids unnecessary stalls of load operations
+
+Store B Implies that memory contents are temporarily stale
+on a multiprocessor, CPUs see different order of writes
+“weak store order”, to be revisited in SMP context -->
+
+        </section>
+
+        <section>
+          <section>
+            <h2>Hardware cache optimizations</h2>
+            <p>Basic:</p>
+            <ol>
+              <li>Larger block size to reduce miss rate</li>
+              <li>Bigger caches to reduce miss rate</li>
+              <li>Higher associativity to reduce miss rate</li>
+              <li>Multilevel caches to reduce miss penalty</li>
+              <li>Giving priority to read misses over writes to reduce miss penalty</li>
+              <li>Avoiding address translation during indexing of the cache to reduce hit time</li>
+              <li>Victim buffer to reduce conflict misses</li>
+            </ol>
+          </section>
+
+          <section>
+            <h2>Hardware cache optimizations</h2>
+            <p>Advanced:</p>
+            <ol>
+              <li>Small and Simple First-Level Caches to Reduce Hit Time and Power</li>
+              <li>Way Prediction to Reduce Hit Time</li>
+              <li>Pipelined Cache Access to Increase Cache Bandwidth</li>
+              <li><b>Nonblocking Caches to Increase Cache Bandwidth</b></li>
+              <li>Multi-banked Caches to Increase Cache Bandwidth</li>
+              <li>Critical Word First and Early Restart to Reduce Miss Penalty</li>
+              <li>Merging Write Buffer to Reduce Miss Penalty</li>
+              <li>Hardware Prefetching of Instructions and Data to Reduce Miss Penalty or Miss Rate</li>
+            </ol>
+          </section>
+        </section>
+
+        <section>
+          <h2>Nonblocking Caches</h2>
+          <blockquote><b>Nonblocking cache (or Lockup Free)</b> is a cache design for which cache continues to supply
+          cache hits during a miss, called <b>hit under miss</b>, or <b>hit under multiple miss</b>.</blockquote>
+
+          <ul>
+            <li>Especially useful for out-or-order pipeline</li>
+            <li>Out-or-oder with coup of nonblocking cache is generally capable of hiding the  miss penalty of an L1 data cache miss that hits
+            in the L2 cache, but is not capable of hiding a significant portion of the L2 miss penalty.</li>
+            <li>Hit under miss significantly increases the complexity of the cache controller with the complexity
+            increasing as the number of outstanding misses allowed increases.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Victim buffer</h2>
+          <blockquote><b>Victim buffer (or Victim cache)</b> is a very small fully-associative cache (&approx;4 entries) used to store
+          evicted cache lines before complete kick out. If the cache line in a victim buffer is requested it is placed
+          in cache again.</blockquote>
+          <ul>
+            <li>In fact it is 4 extra ways, shared among all sets</li>
+            <li>VB is very useful to deal with conflict misses</li>
+            <li>VB helps then associativity is not enough</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Hardware prefetching</h2>
+          <blockquote><b>Hardware prefetching</b> is the mechanism implemented in cache HW that puts memory blocks promising to be accessed
+           in the nearest future speculatively in cache.</blockquote>
+          <ul>
+            <li>Hardware is able to recognize different access pattern</li>
+            <li>Prefetcher keeps on track multiple read and write streams</li>
+            <li>The simplest pattern is streaming kernel.</li>
+            <li>The compromise should be found
+              <ul>
+                <li>Do not evict useful data</li>
+                <li>Properly select prefetching distance</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+<!--         <section>
+          <h2>Coherency problem</h2>
+          <p>Cache Contention on SMPs</p>
+          <ul>
+            <li>When two or more CPUs alternately and repeatedly update the same cache line</li>
+            <li>memory contention
+              <ul>
+                <li>when two or more CPUs update the same variable</li>
+                <li>correcting it involves an algorithm change</li>
+              </ul>
+            </li>
+            <li>false sharing
+              <ul>
+                <li>when CPUs update distinct variables that occupy the same cache line</li>
+                <li>correcting it involves modification of data structure layout</li>
+              </ul>
+            </li>
+          </ul>
+        </section> -->
+
+        <section>
+          <h2>Pragmatics: caches</h2>
+          <ul>
+            <li>Don't access for write into the same cache lines from different processes<br>
+            &#8594; avoid coherency conflicts</li>
+            <li>Ensure data locality, use proper data structures and algorithms<br>
+            &#8594; avoid contention conflicts</li>
+            <li>Fetch from many different streams carefully<br>
+            &#8594; avoid associativity conflicts</li>
+            <li>Tile for the largest non-shared cache. Never block for the shared cache size<br>
+            &#8594; avoid contention conflicts<br>
+            <small>Depending on the speed difference and amount of work per iteration, L1 may be better.</small></li>
+            <li>Use software prefetching (<code>PLD</code>)<br>
+            &#8594; reduce cold cash misses<br>
+            <small>Prefetching suits contiguous memory accesses patterns, but not random</small></li>
+            <!-- <li>Compiler Optimizations to Reduce Miss Rate</li> -->
+            <!-- <li>Compiler-Controlled Prefetching to Reduce Miss Penalty or Miss Rate</li> -->
+          </ul>
+        </section>
+
+        <section>
+          <h2>Optimize for caches</h2>
+          <ul>
+            <li>Strip mining & tiling </li>
+            <li>Stride minimization</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Summary</h2>
+            <ul style="width: 100%">
+              <li></li>
+            </ul>
+        </section>
+
+        <section>
+          <h1>THE END</h1>
+          <img alt="The end" class="simple" src="images/popt/infinity.png">
+          <h4><a href="https://github.com/cuda-geek">Marina Kolpakova</a> / 2015-2016</h4>
+        </section>
+
+      </div>
+    </div>
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+    <script>
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: false,
+        slideNumber: true,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+        { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+        { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+        { src: 'plugin/zoom-js/zoom.js' , async: true  },
+        { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
+
+    </script>
+  </body>
+</html>
