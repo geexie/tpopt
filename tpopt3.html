@@ -152,7 +152,7 @@
                   <tr>
                     <td>Cortex-A53</td>
                     <td>ARM</td>
-                    <td>Octa Exynos 7(7580) 1.6GHz 28nm <abbr title="High-k Metal Gate">HKMG</abbr></td>
+                    <td>Octa Exynos 7(7580) 1.6GHz 28nm<abbr title="High-k Metal Gate">HKMG</abbr></td>
                   </tr>
                   <tr>
                     <td width="17%">Cortex-A57</td>
@@ -165,12 +165,12 @@
                     <td>Cortex-A72</td>
                     <td>ARM</td>
                     <td>Deca MediaTek Helio X20 <small style="vertical-align:bottom; ">big.LITTLE</small> 2.5/2.0/1.4
-                    20<abbr title="High-k Metal Gate">HKMG</abbr> (TSMC)  </td>
+                    20nm<abbr title="High-k Metal Gate">HKMG</abbr> (TSMC)  </td>
                   </tr>
                   <tr>
                     <td>Cortex-A35</td>
                     <td>ARM</td>
-                    <td></td>
+                    <td>-</td>
                   </tr>
                 </tbody>
               </table>
@@ -195,18 +195,21 @@
                   <tr>
                     <td>Denver</td>
                     <td>NVIDIA</td>
-                    <td>Dual Tegra K1 2.3GHz 28nm <abbr title="High Performance Mobile">HPM</abbr></td>
+                    <td>Dual Tegra K1 2.3GHz 28nm<abbr title="High Performance Mobile">HPM</abbr></td>
                   </tr>
                   <tr>
                     <td>Kryo</td>
                     <td>Qualcomm</td>
                     <td>Tetra S820 <small style="vertical-align:bottom; ">big.LITTLE</small>
-                    2.2/1.6GHz 14<abbr title="Fin-Shaped Field Effect Transistor">FF (LPP)</abbr> (Samsung)</td>
+                    2.2/1.6GHz 14<abbr title="Fin-Shaped Field Effect Transistor">FF</abbr> (
+                    <abbr title="Low Power Plus">LPP</abbr>) (Samsung)</td>
                   </tr>
                   <tr>
                     <td>Exynos M1</td>
                     <td>Samsung</td>
-                    <td>Exynos 8890 (no details yet) </td>
+                    <td>Quad Exynos 8890 <small style="vertical-align:bottom; ">big.LITTLE</small> 2.6/2.29GHz
+                     14<abbr title="Fin-Shaped Field Effect Transistor">FF</abbr> (
+                    <abbr title="Low Power Plus">LPP</abbr>) (Samsung)</td>
                   </tr>
                 </tbody>
               </table>
@@ -231,20 +234,20 @@
                   <tr>
                     <td>Cyclone</td>
                     <td>Apple</td>
-                    <td>Dual A7 (APL0698) 1.4GHz 28nm <abbr title="High-k Metal Gate">HKMG</abbr> (Samsung)</td>
+                    <td>Dual A7 (APL0698) 1.4GHz 28nm<abbr title="High-k Metal Gate">HKMG</abbr> (Samsung)</td>
                   </tr>
                   <tr>
                     <td>Typhoon</td>
                     <td>Apple</td>
-                    <td>Dual A8 (APL1012) 1.3GHz 20<abbr title="High-k Metal Gate">HKMG</abbr> (TSMC)</td>
+                    <td>Dual A8 (APL1012) 1.3GHz 20nm<abbr title="High-k Metal Gate">HKMG</abbr> (TSMC)</td>
                   </tr>
                   <tr>
                     <td style="border-bottom: none;" rowspan="2">Twister</td>
                     <td style="border-bottom: none;" rowspan="2">Apple</td>
-                    <td>Dual A9 (APL0898) 1.85GHz 16<abbr title="Fin-Shaped Field Effect Transistor">FF+</abbr> (TSMC)</td>
+                    <td>Dual A9 (APL0898) 1.85GHz 16nm<abbr title="Fin-Shaped Field Effect Transistor">FF+</abbr> (TSMC)</td>
                   </tr>
                   <tr >
-                    <td>Dual A9 (APL1022) 1.85GHz 14<abbr title="Fin-Shaped Field Effect Transistor">FF</abbr>(
+                    <td>Dual A9 (APL1022) 1.85GHz 14nm<abbr title="Fin-Shaped Field Effect Transistor">FF</abbr>(
                     <abbr title="Low power Plus">LPP)</abbr> (Samsung)</td>
                   </tr>
                 </tbody>
@@ -277,7 +280,7 @@
                 <ul>
                   <li><b>performs a bunch of operations in fly;</b></li>
                   <li>features many simple compute units/cores;</li>
-                  <li>employs simple pipelines to provide a low-cost thread scheduling;</li>
+                  <li>employs simple pipelines and large register file to provide a low-cost thread scheduling;</li>
                   <li>uses wide basses, tiling, programmable local memory.</li>
                   <li><b>Compute cores occupy most part of a die.</b></li>
                 </ul>
@@ -285,13 +288,8 @@
             </dl>
           </section>
         </section>
-<!--
-        <section>
-          <h2>What is on die?</h2>
-          <img width="50%" class="simple" src="images/popt/pLDBDAIaeFFrBEdN.large.jpeg">
-          <br>
-          <small>Image source <a href="http://www.chipworks.com">ChipWorks</a></small>
-        </section> -->
+
+        <!-- <section>add DIE shot for Maxwell and some Intel to compare building blocks</section> -->
 
         <section>
           <h2>Key architecture families</h2>
@@ -308,8 +306,10 @@
             <h2>CISC</h2>
             <b>Complex Instruction Set Computer</b>
             <ul>
-              <li><b>Designed in the 1970s</b> which was a time where transistors were expensive while compilers
-              were naive. Additionally, instruction packaging was the main concern due to shortage of memory.</li>
+              <li><b>Designed in the 1970s</b> which was a time where <strong>transistors were expensive</strong> while
+              <strong>compilers were naive</strong>. Additionally, <strong>instruction packaging was the main concern
+              </strong> due to shortage of memory. <strong>The latency of the memory was just a bit higher then
+              registers.</strong></li>
               <li><b>The goal</b> was to define an instruction set that allows high level language constructs
               be translated into <strong>as few assembly language instructions as possible</strong>,
               improving performance as well as code density.</li>
@@ -401,12 +401,15 @@
         </section>
 
         <section>
-          <h2>Towards registers</h2>
-          <!-- define what is registers! -->
+          <h2>a word towards registers</h2>
+          <blockquote>In deed, registers are temporary storage locations inside the processor that hold data and
+          addresses.</blockquote>
           <ul>
-            <li>Local variables are not the same as registers in ISA</li>
-            <li>Registers provided by ISA is not the same as actual register file. Internal reorder buffer is closer to
-            classic definition of register file</li>
+            <li>Local variables are not the same as registers in ISA, since compiler uses IR internally and does
+            register allocation close to the end of optimization process.</li>
+            <li>Registers provided by ISA is not the same as actual registers on the processor. Internal reorder buffers
+            which hold decoded instruction parameters and intermediate results are
+            closer to classic definition of a register file.</li>
           </ul>
         </section>
 
@@ -417,7 +420,7 @@
             <ul>
               <li><b>Designed in the 1980s</b> which was a time there IPL was the most concern.</li>
               <li><b>The goal</b> was to pipeline instructions as much as possible employing software to help with it
-              reducing complexity of the hardware.</li>
+              reducing complexity of the hardware and mitigate the gap.</li>
               <li><b>Example</b> is Intel­HP Itanium.</li>
               <li><b>Throughput-oriented architecture</b></li>
             </ul>

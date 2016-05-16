@@ -88,6 +88,24 @@
         </section>
 
         <section>
+          <h2>DRAM/SRAM</h2>
+          <ul>
+            <li><strong>Dynamic random-access memory (DRAM)</strong> is used to implement main memory because it is
+              <ul>
+                <li>cheap to manufacture</li>
+                <li>easy to build large</li>
+              </ul>
+            </li><strong>Static random-access memory (SRAM)</strong> cannot be used to implement main memory because it is
+              <ul>
+                <li>much more expensive to manufacture</li>
+                <li>hard to build capacious because it requires more transistors per cell,</li>
+                <li>but it is much faster</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
           <h2>Locality principals</h2>
           <dl>
             <dt><b>Temporal locality</b></dt>
@@ -137,7 +155,12 @@
 
               <dt><b>Cycle time</b></dt>
               <dd>is the minimum time between requests to memory.</dd>
+            </dl>
+          </section>
 
+          <section>
+            <h2>terminology</h2>
+            <dl>
               <dt><b>Cache hit</b></dt>
               <dd>is the situation when the requested data is in the cache.</dd>
 
@@ -165,12 +188,22 @@
             <h2>terminology</h2>
             <dl>
               <dt><b>Cache miss penalty</b></dt>
-              <dd>is the time required for serving a cache miss<br/>(depends on the latency and bandwidth of the memory).</dd><br/>
+              <dd>is the time required for serving a cache miss<br/>(It depends on the latency and bandwidth of the
+              lower level of cache or memory).</dd>
 
               <dt><b>Memory stall cycles</b></dt>
               <dd>is the cycles during which a CPU is stalled waiting for a memory access.</dd>
             </dl>
           </section>
+        </section>
+
+        <section>
+          <h2>typical numbers for modern ARM</h2>
+          <ul>
+            <li>main memory is 3 GB</li>
+            <li>L2 cache is 2MB (1:1536)</li>
+            <li>L1 cache is 32KB per core or 128KB in total (1:24576)</li>
+          </ul>
         </section>
 
 <!--         Using multiple levels of cache allows a small fast cache to keep pace with the
@@ -182,10 +215,8 @@ cache benefits the most from data locality.  Thus a global miss rate that
 indicates what fraction of the memory access that leave the CPU go all the way
 to memory is a more useful measure. -->
 
-      <section>
-
         <section>
-          <h2>Cache properties </h2>
+          <h2>Inclusive / Exclusive</h2>
           <ul>
             <li>Modern processors have from 1 to 4 levels of caches
               <ul>
@@ -198,7 +229,7 @@ to memory is a more useful measure. -->
         </section>
 
         <section>
-          <h2>Cache properties </h2>
+          <h2>Cache line</h2>
           <ul>
             <li>Data transfer unit between registers and L1 cache is usually in between 1-16 bytes</li>
             <li><b>Cache line</b> is the smallest transfer unit between main memory(or higher level cache) and cache
@@ -208,8 +239,6 @@ to memory is a more useful measure. -->
             <li>Each line has a <b>tag</b> that indicates the address in memory from which the line has been copied.</li>
           </ul>
         </section>
-      </section>
-
 
         <section>
           <h2>Associativity</h2>
@@ -233,6 +262,10 @@ to memory is a more useful measure. -->
           </ul>
           <blockquote>Higher associativity gives faster caches, but costly in terms of gates and complexity
           (power and performance).</blockquote>
+        </section>
+
+        <section>
+          <h2>Capacity</h2>
         </section>
 
         <section>
@@ -456,6 +489,10 @@ on a multiprocessor, CPUs see different order of writes
         </section>
 
         <section>
+          <h2>Obtaining cache properties ARM</h2>
+        </section>
+
+        <section>
           <h2>Optimize for caches</h2>
           <ul>
             <li>Strip mining & tiling </li>
@@ -464,9 +501,34 @@ on a multiprocessor, CPUs see different order of writes
         </section>
 
         <section>
+          <h2>Permutations for address</h2>
+          Skewed caches. mirco-benchmark result
+        </section>
+
+        <section>
+          <h2></h2>
+        </section>
+
+        <section>
+          <h2>Optimization for caches</h2>
+          <ol>
+            <li>Keep inventory of the program small (use less data)</li>
+            <li>See the first rule</li>
+          </ol>
+        </section>
+
+<!--         <section>
+          <h2>Tools</h2>
+          pahole
+          tag hashing
+          streaming and write combining
+        </section> -->
+
+        <section>
           <h2>Summary</h2>
             <ul style="width: 100%">
-              <li></li>
+              <li>verity is in the details!</li>
+              <li>The second software-hardware gap. Use the patterns which was considered by HW designers</li>
             </ul>
         </section>
 
