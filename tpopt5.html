@@ -78,6 +78,140 @@
         </section>
 
         <section>
+          <h2>pipelined execution</h2>
+          <blockquote>The idea of <b>pipelined execution</b> is to break down an instruction into multiple stages so that instructions
+          on different stages can be processed at the same clock cycle. Introduced in 1958.</blockquote>
+        </section>
+
+        <section>
+          <section>
+            <h2>Classic 5-stage pipeline</h2>
+            <dl>
+              <dt><b>Instruction fetch cycle (IF)</b></dt>
+              <dd>An instructions is fetched from I$ and may be placed either into an <abbr title="instruction register">IR</abbr>
+              or a queue of pending instructions.</dd>
+              <dt><b>Instruction decode/register fetch cycle (ID)</b></dt>
+              <dd>An instruction is decoded, register operands are read from the register file.</dd>
+              <dt><b>Execution/effective address cycle (EX)</b></dt>
+              <dd>Either an ALU operation is performed or an effective address for memory access is computed,
+              which depends on an instruction type</dd>
+            </dl>
+          </section>
+
+          <section>
+            <h2>Classic 5-stage pipeline</h2>
+            <dl>
+              <dt><b>Memory access/branch completion cycle (MEM)</b></dt>
+              <dd>The memory is accessed, if appropriate.</dd>
+              <dt><b>Write­back cycle (WB)</b></dt>
+              <dd>The result is written into the register file, whether it comes from the memory system (for a load)
+              or from the ALU (for an ALU instruction)</li>
+            </dl>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Without pipelined execution</h2>
+            <img class="simple" width="80%" src="images/popt/nopipeline.svg">
+          </section>
+
+          <section>
+            <h2>with pipelined execution</h2>
+            <img class="simple" width="80%" src="images/popt/pipeline.svg">
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Pipeline hazards</h2>
+            <blockquote><b>Pipeline hazard</b> is a situation that prevents the next instruction in the pipeline from executing
+            during its designated clock cycle and thus cause pipeline stalls
+              <br/><small>All the terms used are taken from Hennessey & Paterson</small>
+            </blockquote>
+          </section>
+
+          <section>
+            <h2>Pipeline hazards</h2>
+            <dl>
+              <dt><b>Structural hazard</b></dt>
+              <dd>arise from resource conflicts when the hardware cannot support all possible combinations of instructions
+              simultaneously in overlapped execution.</dd>
+
+              <dt><b>Data hazard</b></dt>
+              <dd>arise when an instruction depends on the results of a previous instruction in a way that is exposed
+              by the overlapping of instructions in the pipeline.</dd>
+
+              <dt><b>Control hazard</b></dt>
+              <dd>arise from the pipelining of branches and other instructions that change the PC.</dd>
+            </dl>
+          </section>
+
+        </section>
+
+          <section>
+            <h2>Superscalar</h2>
+            <img class="simple" width="60%" src="images/popt/super-scalar.png">
+          </section>
+
+          <section>
+            <h2>multiple-issue superscalars: Cortex-A53</h2>
+            Instructions are dispatched 2 per cycle to the appropriate issue queue.<br/>
+            Issue Width &mdash; 2 &mu;ops, Pipeline Length &mdash; 8 stages, Pipeline Length &mdash; 8 stages,
+            Number of pipes &mdash; 5: I0, I1, FP, B, LD/DT.
+            <div><img width="50%" src="images/popt/A53-Diagram.png"></div>
+            <small>image source is <a href="http://images.anandtech.com/doci/8718/A53-Diagram.png">AnandTech.com</a></small>
+          </section>
+
+<!--         <section>
+          <h2>Speculative execution</h2>
+        </section>
+
+        <section>
+          <h2>Branch prediction</h2>
+        </section>
+
+        <section>
+          <h2>Out-of-order execution</h2>
+        </section>
+
+        <section>
+          <h2>Prefetch streams and write stream</h2>
+        </section>
+
+        <section>
+          <h2>SMP vs AMP</h2>
+          <p>difference, coherency problems, multi-core vs multi-cluster big.LITTLE</p>
+        </section>
+
+        <section>
+          <h2>SIMD vs Vector co-processors</h2>
+        </section>
+
+        <section>
+          <h2>Summary</h2>
+          <ul>
+            <li>Deep pipeline is to a silver-bullet (CPI, overhead)</li>
+            <li>Programmer is almost unable to schedule registers on modern architectures: OoO, renaming, optimizing compilers
+          </ul>
+        </section> -->
+
+<!--         <section>
+At least 3 major approaches:
+Make cores as fast/slow as main memory (SiCortex, Tensilica)
+Add faster/closer memory pipes (Opteron, Nehalem)
+Streaming compute engines (NVIDIA,AMD), vectorized memory pipelines (Convey).
+
+With multiple cores, more than one level can keep MESI states.
+
+Hardware Prefetching
+When you see linear scaling graphs, be (somewhat) suspicious.
+Linear scalability is easy(ier) when per-core performance is low!
+The faster a single core computes, the more vulnerable it is to other bottlenecks.
+So producing a linear graph, does not make your program efficient.
+        </section> -->
+
+        <section>
           <h2>Summary</h2>
             <ul style="width: 100%">
             </ul>
