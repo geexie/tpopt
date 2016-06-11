@@ -78,7 +78,7 @@
 
         <section>
           <h2>The memory-processor gap</h2>
-          Processor advances much faster than memory.
+          Processor advances much faster than memory
           <figure>
             <img style="width: 60%" class="simple" src="images/popt/hp-mem.jpg">
             <figcaption><small>Image source Hennessey &amp; Paterson.</small></figcaption>
@@ -121,29 +121,23 @@
           </dl>
         </section>
 
-        <section>
-          <section>
-            <h2>Cache hierarchy</h2>
-            <ul>
-              <li><b>Cache</b> is a small fast memory usually integrated on the chip that holds recently used data or instructions
-              for further use.</li>
-              <li>Accessing cache is slower than accessing registers but faster than main memory.</li>
-              <li>Modern computers have memory of different types and properties organized in hierarchy, several levels
-              of caches lay between processor and main memory.</li>
-              <li> Hierarchy offers a reasonable tread off between speed, size and cost.</li>
-              <li>Cache may offer some shrink in power consumption.</li>
-            </ul>
-          </section>
+<!--         <section>
+          <h2>Examples of localities</h2>
+        </section> -->
 
-          <section>
-            <h2>Cache hierarchy</h2>
-            <ul>
-              <li>Modern architectures belong to Harvard class so have data and instruction cache separated.</li>
-              <li>Cache is usually marked as <b><code>Lx</code></b> for referring to any type of it. <b><code>Dx</code></b>,
-               for <strong>data</strong> cache and <b><code>Ix</code></b> for <strong>instruction</strong> cache.</li>
-              <li>L1 is used to call the closest to processor level of cache.</li>
-            </ul>
-          </section>
+        <section>
+          <h2>Cache hierarchy</h2>
+          <ul>
+            <li><b>Cache</b> is a <strong>small fast</strong> memory usually integrated on the chip that holds recently used data/instructions
+            for further use</li>
+            <li>Accessing cache is slower than accessing registers, but faster than main memory</li>
+            <li>Modern computers have memory of different types and properties organized in hierarchy, several levels
+            of caches lay between processor and main memory</li>
+            <li> Hierarchy offers a reasonable tread off between <strong>speed</strong>, <strong>size</strong>
+             and <strong>cost</strong></li>
+            <li>Cache offers shrink in power consumption</li>
+            <li>Modern architectures belong to Harvard class so have data and instruction cache separated</li>
+          </ul>
         </section>
 
         <section>
@@ -151,22 +145,17 @@
             <h2>terminology</h2>
             <dl>
               <dt><b>Access time</b></dt>
-              <dd>is the time from when a read or write is requested until it arrives at its destination.</dd>
+              <dd>is the time from when a read or write is requested until it arrives at its destination</dd>
 
               <dt><b>Cycle time</b></dt>
-              <dd>is the minimum time between requests to memory.</dd>
-            </dl>
-          </section>
+              <dd>is the minimum time between requests to memory</dd>
 
-          <section>
-            <h2>terminology</h2>
-            <dl>
               <dt><b>Cache hit</b></dt>
-              <dd>is the situation when the requested data is in the cache.</dd>
+              <dd>is the situation when the requested data is in the cache</dd>
 
               <dt><b>Cache miss</b></dt>
-              <dd>is the situation when the requested data isn't in the cache. Upon a cache miss, the data is retrieved
-               from main memory (or a higher level of cache) and placed in it.</dd>
+              <dd style="padding-bottom:0;">is the situation when the requested data isn't in the cache. Upon a cache miss,
+              the data is retrieved from main memory (or a higher level of cache) and placed in it</dd>
             </dl>
           </section>
 
@@ -174,7 +163,7 @@
             <h2>terminology</h2>
             <dl>
               <dt><b>Cache miss rate</b></dt>
-              <dd>is the fraction of cache accesses that result in a miss.</dd>
+              <dd>is the fraction of cache accesses that result in a miss</dd>
 
               <dt><b>Local miss rate</b></dt>
               <dd>is the number of misses in a cache divided by the total number of memory access to this cache</dd>
@@ -182,72 +171,62 @@
               <dt><b>Global miss rate</b></dt>
               <dd>is the number of misses in a cache divided by the total number of memory accesses generated</dd>
             </dl>
+
+            <small>The <strong>local miss rate</strong> is large for higher level caches because the 1st level
+            cache benefits the most from data locality. Thus a <strong>global miss rate</strong> that indicates what
+            fraction of the memory access that leave the CPU go all the way to memory is a more useful measure.</small>
           </section>
 
           <section>
             <h2>terminology</h2>
             <dl>
               <dt><b>Cache miss penalty</b></dt>
-              <dd>is the time required for serving a cache miss<br/>(It depends on the latency and bandwidth of the
-              lower level of cache or memory).</dd>
+              <dd>is the time required for serving a cache miss<br/>(depends on the latency and bandwidth of the memory)</dd>
 
               <dt><b>Memory stall cycles</b></dt>
-              <dd>is the cycles during which a CPU is stalled waiting for a memory access.</dd>
+              <dd>is the cycles during which a CPU is stalled waiting for a memory access</dd>
+
+              <dt>D$/I$</dt>
+              <dd><strong>data</strong> cache/<strong>instruction</strong> cache</dd>
             </dl>
           </section>
         </section>
 
         <section>
-          <h2>typical numbers for modern ARM</h2>
+          <h2>Cache line</h2>
           <ul>
-            <li>main memory is 3 GB</li>
-            <li>L2 cache is 2MB (1:1536)</li>
-            <li>L1 cache is 32KB per core or 128KB in total (1:24576)</li>
-          </ul>
-        </section>
-
-<!--         Using multiple levels of cache allows a small fast cache to keep pace with the
-CPU, while slower larger caches can be used to reduce the miss penalty since
-the next level cache can be used to capture many accesses that would go to
-main memory.
-The local miss rate is large for higher level caches because the first level
-cache benefits the most from data locality.  Thus a global miss rate that
-indicates what fraction of the memory access that leave the CPU go all the way
-to memory is a more useful measure. -->
-
-        <section>
-          <h2>Inclusive / Exclusive</h2>
-          <ul>
+            <li>Data transfer unit between registers and the highest cache (L1) is usually in between 1-16 bytes</li>
+            <li><b>Cache line</b> is the smallest transfer unit between main memory(or higher level cache) and cache
+            (typically 32, 64 bytes, sometimes 128 bytes and more)</li>
+            <li>Cache line is also unit of storage allocation in cache</li>
             <li>Modern processors have from 1 to 4 levels of caches
               <ul>
                 <li><b>Inclusive</b> caches duplicates the data from higher level cache in lower levels</li>
                 <li><b>Exclusive</b> caches contains data only in one level of cache</li>
-                <li>Most caches are <b>inclusive</b> which simplifies coherency handling.</li>
               </ul>
             </li>
           </ul>
-        </section>
-
-        <section>
-          <h2>Cache line</h2>
-          <ul>
-            <li>Data transfer unit between registers and L1 cache is usually in between 1-16 bytes</li>
-            <li><b>Cache line</b> is the smallest transfer unit between main memory(or higher level cache) and cache
-            (typically 32, 64 bytes, sometimes 128 bytes and more). Cache line is also unit of storage
-            allocation in cache</li>
-            <li>Whole cache is split into <b>sets</b> equal in size.</li>
-            <li>Each line has a <b>tag</b> that indicates the address in memory from which the line has been copied.</li>
-          </ul>
+          Most caches are <b>inclusive</b> to simplify coherency handling.
         </section>
 
         <section>
           <h2>Associativity</h2>
+          <blockquote><b>Cache associativity</b> is the number of unique places in a cache where any given memory
+          item can reside.</blockquote>
           <ul>
-            <li><b>Cache associativity</b> is the number of unique places in a cache where any given memory item can reside.</li>
-            <li>Cache hit is detected through an <b>associative search</b> of all the tags.</li>
+            <li>Whole cache is split into <b>sets</b> equal in size</li>
+            <li>Each line in a cache has a <b>tag</b> that indicates the address in memory from which the line has been copied</li>
+            <li>A hit is detected through an <b>associative search</b> of all tags</li>
           </ul>
-          <blockquote>Consequently, there is a <b>cache size/hit latency tread off</b>, large caches can keep mere data,
-            but need more time for tag search.</blockquote>
+          <blockquote>Consequently, there is a <b>cache size/hit latency tread off</b>, large caches can keep more data,
+            but need more time for tag search. <b>L1 have to be small to be fast!</b></blockquote>
+        </section>
+
+        <section>
+          <h2>Set-Associativity</h2>
+          <blockquote>address MOD #sets</blockquote>
+          <p>image from the paper about micro-bench</p>
+          <p>example of translation</p>
         </section>
 
         <section>
@@ -265,10 +244,6 @@ to memory is a more useful measure. -->
         </section>
 
         <section>
-          <h2>Capacity</h2>
-        </section>
-
-        <section>
           <section>
             <h2>Direct Mapped</h2>
             <img class="simple" width="50%" src="images/popt/dmc.svg"/>
@@ -281,6 +256,20 @@ to memory is a more useful measure. -->
             <h2>Fully-associative</h2>
             <img class="simple" width="50%" src="images/popt/fac.svg"/>
           </section>
+        </section>
+
+        <section>
+          <h2>Summary: Designer's chooses</h2>
+          <ul>
+            <li>Cache line size
+              <ul>
+                <li></li>
+                <li></li>
+              </ul>
+            </li>
+            <li>Cache capacity</li>
+            <li>Higher associativity</li>
+          </ul>
         </section>
 
         <section>
@@ -555,6 +544,9 @@ Weak consistency (reads and writes are arbitrarily reordered, limited only by ex
         </section>
 
         <section>
+          <h2>Weak and strong memory models</h2>
+        </section>
+        <section>
           <h2>Permutations for address</h2>
           Skewed caches. mirco-benchmark result
         </section>
@@ -577,7 +569,6 @@ Weak consistency (reads and writes are arbitrarily reordered, limited only by ex
           tag hashing
           streaming and write combining
         </section> -->
-
         <section>
           <h2>Summary</h2>
             <ul style="width: 100%">
