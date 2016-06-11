@@ -485,6 +485,43 @@ on a multiprocessor, CPUs see different order of writes
           </ul>
         </section>
 
+<!--         <section>
+          <h2>Memory ordering</h2>
+          <ul>
+            <li>Compile ordering
+              <pre class="cpp"><code>asm volatile("" ::: "memory");</code></pre>
+              <pre class="cpp"><code>atomic_signal_fence(memory_order_acq_rel);</code></pre>
+              forbids GCC compiler to reorder read and write commands around it
+            </li>
+            <li>hardware ordering</li>
+          </ul>
+
+Sequential consistency (all reads and all writes are in-order)
+Relaxed consistency (some types of reordering are allowed)
+Loads can be reordered after loads (for better working of cache coherency, better scaling)
+Loads can be reordered after stores
+Stores can be reordered after stores
+Stores can be reordered after loads
+Weak consistency (reads and writes are arbitrarily reordered, limited only by explicit memory barriers)
+        </section>
+
+        <section>
+          <h2>Hardware memory model</h2>
+          <blockquote>A <b>hardware memory model</b> defines what kind of memory ordering is to expect at runtime
+          relative to an assembly (or machine) code block.</blockquote>
+          It is transparent for users, but important when lock-free programming techniques are used.
+          <ul>
+            <li>Weak - Any load or store operation can effectively be reordered with any other load or store operation,
+            as long as it would never modify the behavior of a single, isolated thread</li>
+            <li>Strong</li>
+            <li>Relaxed</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Lock-Free Programming</h2>
+        </section> -->
+
         <section>
           <h2>Pragmatics: caches</h2>
           <ul>
