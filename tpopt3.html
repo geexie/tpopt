@@ -91,7 +91,7 @@
           <section>
             <h2>1-st Aspect of Computer Architecture</h2>
             <blockquote><b>Instruction Set Architecture or ISA (interface)</b><br>
-            is a <strong>contract</strong> between HW and SW, which specifies<br> <strong>right</strong>,
+            is a <strong>contract</strong> between HW and SW,<br> which specifies <strong>right</strong>,
               <strong>possibilities</strong> &amp; <strong>limitations</strong>.</blockquote>
             <ul>
               <li>Class of ISA (load-store, register-memory)</li>
@@ -127,7 +127,7 @@
               <li>Tech-process</li>
               <li>Clock rates</li>
               <li>On die placement</li>
-              <li>All the properties of the chip</li>
+              <li><i>All the properties of the chip</i></li>
             </ul>
           </section>
         </section>
@@ -257,13 +257,14 @@
 
         <section>
           <section>
-            <h2>Latency <small style="vertical-align: bottom;">vs</small> Throughput architectures</h2>
+            <h2>Latency <small style="vertical-align: middle;">vs</small> Throughput architectures</h2>
             <dl>
               <dt><b>Latency</b> oriented architecture</dt>
               <dd>
                 <ul>
                   <li><b>addresses latency hiding issues;</b></li>
-                  <li>features sophisticated pipelining, out-of-order;</li>
+                  <li>features sophisticated pipelining;</li>
+                  <li>out-of-order;</li>
                   <li>employs advanced cache hierarchies;</li>
                   <li>widely uses speculation.</li>
                   <li><b>Compute cores occupy only a small part of a die.</b></li>
@@ -293,12 +294,15 @@
 
         <section>
           <h2>Key architecture families</h2>
-          <ul>
-            <li><strong>RISC</strong> - Reduced Instruction Set Computer</li>
-            <li><strong>CISC</strong> - Complex Instruction Set Computer</li>
-            <li><strong>VLIW</strong> - Very Long Instruction Word</li>
-            <li><strong>Vector</strong> architecture</li>
-          </ul>
+          <dl>
+            <dt><strong>RISC</strong></dt>
+            <dd>Reduced Instruction Set Computer</dd>
+            <dt><strong>CISC</strong></dt>
+            <dd>Complex Instruction Set Computer</dd>
+            <dt><strong>VLIW</strong></dt>
+            <dd>Very Long Instruction Word</dd>
+            <dt><strong>Vector</strong> architecture</dt>
+          </dl>
         </section>
 
         <section>
@@ -324,15 +328,14 @@
               <li><b>Heritage</b>
                 <ul>
                   <li><i>instructions access memory, a plenty of addressing modes</i>,</li>
-                  <li>many instruction families and a <i>very rich ISA</i>,</li>
+                  <li>many instruction families and a <i>very rich variable length ISA</i> (alignment counts!),</li>
                   <li>consequently, <i><strong>complicated instruction decoding</strong></i> logic.</li>
                   <li>Moreover, a <i>few registers are available</i> for programmers.</li>
                 </ul>
               </li>
               <li><b>Nowadays</b>
                 <ol>
-                  <li>CISC instructions are typically broken down into the lower level instructions (&mu;code) which
-                  are much easy to pipeline and process in a power efficient fashion.</li>
+                  <li>Instructions are broken down into &mu;code which are much easy to pipeline and process power efficiently.</li>
                   <li>Transistors are spent to cache hierarchies, out-of-order execution, large <abbr title="reorder buffers">RB</abbr> and
                    speculation to eliminate stalls.</li>
                    <li>Symmetric multi-processing.</li>
@@ -347,7 +350,8 @@
             <h2>RISC</h2>
             <b>Reduced Instruction Set Computer</b>
             <ul>
-              <li><b>Designed in the 1980s</b> which was a time there <abbr >IPL</abbr> was the most concern.</li>
+              <li><b>Designed in the 1980s</b> which was a time there <abbr title="Instruction Level Parallelism">IPL</abbr>
+              was the great concern. The memory-processor gap already began to come out.</li>
               <li><b>The goal</b> was to decrease the number of clocks per instruction (CPI) while pipeline instructions
               as much as possible employing hardware to help with it. Uniform ISA, pipelining and large register file
               is a must-have.</li>
@@ -388,7 +392,7 @@
                 <li>analyzes control flow, analyzes dependency</li>
                 <li>schedules instructions</li>
                 <li>maps variables to limited register set</li>
-              </ul>
+              </ul><br>
             </li>
             <li>Hardware
               <ul>
@@ -401,11 +405,12 @@
         </section>
 
         <section>
-          <h2>a word towards registers</h2>
-          <blockquote>In deed, registers are temporary storage locations inside the processor that hold data and
+          <h2>A word towards registers</h2>
+          <blockquote>In deed, <b>registers</b> are temporary storage locations inside the processor that hold data and
           addresses.</blockquote>
           <ul>
-            <li>Local variables are not the same as registers in ISA, since compiler uses IR internally and does
+            <li>Local variables are not the same as registers in ISA, since compiler uses
+            <abbr title="Intermediate representation">IR</abbr> internally and does
             register allocation close to the end of optimization process.</li>
             <li>Registers provided by ISA is not the same as actual registers on the processor. Internal reorder buffers
             which hold decoded instruction parameters and intermediate results are
@@ -418,9 +423,11 @@
             <h2>VLIW</h2>
             <b>Very Long Instruction Word</b>
             <ul>
-              <li><b>Designed in the 1980s</b> which was a time there IPL was the most concern.</li>
+              <li><b>Designed in the 1980s</b> which was a time there <abbr title="Instruction Level Parallelism">IPL</abbr>
+              was the great concern.</li>
               <li><b>The goal</b> was to pipeline instructions as much as possible employing software to help with it
-              reducing complexity of the hardware and mitigate the gap.</li>
+              reducing complexity of the hardware and mitigate the the Hardware/Software gap. Boost processor clock
+              simplifying work per cycle.</li>
               <li><b>Example</b> is Intel­HP Itanium.</li>
               <li><b>Throughput-oriented architecture</b></li>
             </ul>
@@ -431,10 +438,10 @@
             <ul>
               <li><b>Heritage</b>
                 <ul>
-                  <li>Software determines which instructions can be performed in parallel,</li>
+                  <li>Compiler determines which instructions can be performed in parallel,</li>
                   <li>bundles this information and the instructions,</li>
                   <li>and passes the <b>bundle</b>(word) to the hardware.</li>
-                  <li>No data dependencies between instructions in a bundle.</li>
+                  <li>No data dependencies between instructions in a word.</li>
                   <li>Each operation in a word assigned to specific issue slot (dedicated FU).</li>
                 </ul>
               </li>
@@ -466,8 +473,8 @@
             <ul>
               <li><b>First introduced in 1976</b> and dominated for HPC in the 1980s because of high instruction
               throughput.</li>
-              <li><b>The goal</b> was to perform operations on vectors of data exposing DLP to increase instruction
-              throughput. Vector pipelining is also called chaining.</li>
+              <li><b>The goal</b> was to perform operations on vectors of data exposing data level parallelism (DLP)
+               to increase instruction throughput. Vector pipelining is also called chaining.</li>
               <li><b>Example</b> is Cray</li>
               <li><b>Throughput-oriented architectures.</b></li>
             </ul>
@@ -479,10 +486,10 @@
               <li><b>Heritage</b>
                 <ul>
                   <li>Process the data in vectors, each element in a vector (lane) is independent on any other.</li>
-                  <li>Deep pipelines, wide execution units, not necessary the same width as size (batch length)
-                  if vector in elements (vector length)</li>
-                  <li>Most efficient for simple memory patterns, but getter/scatter is usually possible too</li>
-                  <li>Wide memory interfaces to saturate execution units</li>
+                  <li>Deep pipelines, wide execution units, not necessary the same width (batch length) as size
+                  of vector in elements (vector length).</li>
+                  <li>Most efficient for simple memory patterns, but getter/scatter is usually possible too.</li>
+                  <li>Wide memory interfaces to saturate execution units.</li>
                   <li>Large vector register file, cache is not a strict requirement and absent for classical vector
                   processors.</li>
                 </ul>
@@ -497,7 +504,8 @@
               <li><b>Nowadays</b>
               <ul>
                 <li>They aren't used in generic processors design, but used as a co-processors for
-                a specific workloads: HPC, multimedia, precursors of most designs of modern GPUs.</li>
+                a specific workloads: HPC, multimedia.</li>
+                <li>Precursors of most designs of modern GPUs.</li>
                 <li>Vector pipes with short vector length (8-16 bytes) called SIMD units are widely integrated
                 in modern general purpose processors to accelerate most demanding loops.</li>
             </ul>
@@ -534,15 +542,42 @@
 
         <section>
           <h2>Latest trends</h2>
-          The newest trend is providing RISC-based ISA, but construct VLIW instructions on fry during
-          instruction fetch, which was already used for Denver &mu;architecture.
+          <ul>
+            <li>Architecture is seen as Load-store RISC-inherited</li>
+            <li>Internally instructions are broken down into single-pipe &mu;ops</li>
+            <li>&mu;ops are reordered and optionally organized into words</li>
+            <li>&mu;ops or words are scheduled for execution, caching in the highest level is usually performed on this
+            preprocessed view.</li>
+            <li>Latest generations of Intel processors, NVIDIA Denver architecture and 64-bit ARM Cortex-A processors
+            already employ this approach.</li>
+          </ul>
         </section>
 
         <section>
-          <h2>Summary</h2>
-            <ul style="width: 100%">
-              <li></li>
-            </ul>
+          <section>
+            <h2>Summary</h2>
+              <ul style="width: 100%">
+                <li>There are three key aspects of computer architecture: Instruction Set Architecture,
+                &mu;architecture and design.</li>
+                <li>Some architectures aim to hide latency while others aim to maximize instruction throughput.</li>
+                <li>CISC is created for compact code size and exact instruction encoding and used only on ISA level
+                nowadays.</li>
+                <li>RISC leads to less complicated decoding and pipeline stages allow boosting clock in affordable
+                power budget.</li>
+                <li>VLIW targets power efficient high performance devices for specific tasks or used internally on
+                &mu;architecture level.</li>
+                <li>Vector processors transformed into SIMD-extensions and SIMT-like GPU designs.</li>
+              </ul>
+          </section>
+          <section>
+            <h2>Summary</h2>
+              <ul style="width: 100%">
+                <li>Loads-Store architectres with its simple fixed-width instructions, few addressing modes,
+                concise ISA<br> and optimal size register size is a winner solution.</li>
+                <li><strong>Architecture can expose different properties<br> for it's different levels
+                (ISA, &mu;architecture).</strong></li>
+              </ul>
+          </section>
         </section>
 
         <section>

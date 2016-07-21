@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Pragmatic optimization in modern programming</title>
+    <meta name="description" content="Pragmatic optimization in modern programming">
+    <meta name="author" content="geek">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/beige.css" id="theme">
+    <link rel="stylesheet" href="css/customization.css">
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <link rel="shortcut icon" href="images/ico/favicon.ico">
+    <script>
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <small>
+            <h1>Pragmatic optimization</h1>
+            <h2>In modern programming</h2>
+            <h3>List of laboratory works</h3>
+            <span>
+              <b><a href="practice0.html">Getting compiler feedback</a></b><br>
+              <b><a href="practice1.html">Collaborating with compiler</a></b><br>
+              <b><a href="practice2.html">Squeezing into the cache</a></b><br>
+              <b><a href="practice3.html">Fighting for latency</a></b><br>
+              <b><a href="practice4.html">NEON</a></b><br>
+              <b><a href="practice5.html">Hexagon</a></b><br>
+              <b><a href="practice6.html">Concepts of micro-benchmarking</a></b><br>
+            </span>
+          </small>
+        </section>
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        transition: 'slide',
+        dependencies: [
+          { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js' , async: true  },
+          { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
+    </script>
+  </body>
+</html>
