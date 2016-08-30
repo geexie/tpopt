@@ -71,7 +71,16 @@
         <section>
           <h2>Outline</h2>
           <ul>
-            <li></li>
+            <li>The memory-processor gap</li>
+            <li>Locality principals</li>
+            <li>Cache hierarchy</li>
+            <li>Terminology</li>
+            <li>Cache line</li>
+            <li>Associativity</li>
+            <li>Summary of designer chooses</li>
+            <li>Cache misses taxonomy</li>
+            <li>Replacement policy, Write strategy and Allocation policy</li>
+            <li>Write buffer</li>
             <li>summary</li>
           </ul>
         </section>
@@ -88,21 +97,27 @@
         </section>
 
         <section>
-          <h2>DRAM/SRAM</h2>
-          <ul>
-            <li><strong>Dynamic random-access memory (DRAM)</strong> is used to implement main memory because it is
+          <h2>Why RAM cannot be fast enough?</h2>
+          <dl>
+            <dt>Dynamic random-access memory (DRAM)</dt>
+            <dd>is used to implement main memory because it is
               <ul>
-                <li>cheap to manufacture</li>
-                <li>easy to build large</li>
+                <li>cheap to manufacture,</li>
+                <li>easy to build large,</li>
               </ul>
-            </li><strong>Static random-access memory (SRAM)</strong> cannot be used to implement main memory because it is
+              <br>
+              but it is slow.</dd>
+            <dt>Static random-access memory (SRAM)</dt>
+            <dd>cannot be used to implement main memory because it is
               <ul>
-                <li>much more expensive to manufacture</li>
-                <li>hard to build capacious because it requires more transistors per cell,</li>
-                <li>but it is much faster</li>
+                <li>much more expensive to manufacture,</li>
+                <li>not capacious (requires more transistors per cell),</li>
               </ul>
-            </li>
-          </ul>
+              <br>
+              but it is much faster.
+            </dd>
+          </dl>
+
         </section>
 
         <section>
@@ -119,11 +134,8 @@
             together in time</strong>. If address <b><code>M(n)</code></b> is accessed it is likely that
             <b><code>M(n+&epsilon;)</code></b> will be used, where <b><code>&epsilon;</code></b> is small.</dd>
           </dl>
+          <!-- <small>Give some examples of localities</small> -->
         </section>
-
-<!--         <section>
-          <h2>Examples of localities</h2>
-        </section> -->
 
         <section>
           <h2>Cache hierarchy</h2>
@@ -224,20 +236,35 @@
 
         <section>
           <h2>Set-Associativity</h2>
-          <blockquote>address MOD #sets</blockquote>
-          <p>image from the paper about micro-bench</p>
-          <p>example of translation</p>
+          <blockquote>set = address MOD N<small style="vertical-align:bottom;">sets</small></blockquote>
+          <img style="width: 60%" class="simple" src="images/popt/set-way.svg">
+          <br><small>example of sequential read into cache</small><br>
+          Cache size is 512 bytes, line size is 64 bytes, lower 6 bit to store offset in the line, other
+          log<small style="vertical-align:bottom">2</small>(N<small style="vertical-align:bottom;">sets</small>)
+          is to determine set. The rest bits of the address are used to tag.
+          <br>
+          T = N<small style="vertical-align:bottom;">address</small> -
+          log<small style="vertical-align:bottom">2</small>(Size<small style="vertical-align:bottom;">line</small>) -
+          log<small style="vertical-align:bottom">2</small>(N<small style="vertical-align:bottom;">sets</small>)
+          <blockquote>cache size = N sets * cache line * Associativity</blockquote>
+        </section>
+
+        <section>
+          <h2>Associativity: example</h2>
         </section>
 
         <section>
           <h2>Associativity</h2>
           <ul>
             <li>In an <b>N-way set associative</b> cache, any cache line from memory can map to any of the
-            N locations in a <b>set</b>. 4-/8- or 16-way associative caches are often used in modern chips.</li>
+            N locations in a <b>set</b>. 4-/8- or 16-way associative caches are often used in modern chips. Used for
+            (almost) all moder designs. Cortex-A72 48 KB 3-way L1 I$, 32 KB 2-way L1 I$.</li>
             <li>1 way set associative cache is called <b>direct mapped</b>. Direct mapped means only one location,
-            and so high probability of conflict, but tag search is very fast.</li>
+            and so high probability of conflict, but tag search is very fast. Example: QC Krait  4 kb L0 I/D$ which
+            is used mostly for power saving reasons.</li>
             <li>A fully associative cache is one in which a cache line can be placed anywhere in cache. Full association
-            is feasible for very small size caches only (TLB's).</li>
+            is feasible for very small size caches only (TLB's). can be found in the highest TLB caches.
+            Example: Cortex-A72 48-entry instruction, 32-entry data</li>
           </ul>
           <blockquote>Higher associativity gives faster caches, but costly in terms of gates and complexity
           (power and performance).</blockquote>
@@ -247,6 +274,7 @@
           <section>
             <h2>Direct Mapped</h2>
             <img class="simple" width="50%" src="images/popt/dmc.svg"/>
+            not much bits on tag are left
           </section>
           <section>
             <h2>Set-associative</h2>
@@ -255,21 +283,104 @@
           <section>
             <h2>Fully-associative</h2>
             <img class="simple" width="50%" src="images/popt/fac.svg"/>
+            There are caches which are implemented like this but,
+
+by looking at the numbers for an L2 in use today, will
+
+show that this is impractical. Given a 4MB cache with
+
+64B cache lines the cache would have 65,536 entries.
+
+To achieve adequate performance the cache logic would
+
+have to be able to pick from all these entries the one
+
+matching a given tag in just a few cycles. The effort to
+For each cache line a comparator is needed to compare
+
+the large tag (note, S is zero). The letter next to each
+
+connection indicates the width in bits. If none is given
+
+it is a single bit line. Each comparator has to compare
+
+two T-bit-wide values. Then, based on the result, the ap-
+propriate cache line content is selected and made avail-
+able. This requires merging as many sets of O data lines
+
+as there are cache buckets. The number of transistors
+
+needed to implement a single comparator is large espe-
+cially since it must work very fast. No iterative com-
+parator is usable. The only way to save on the number
+
+of comparators is to reduce the number of them by iter-
+atively comparing the tags. This is not suitable for the
+
+same reason that iterative comparators are not: it takes
+
+too long.
           </section>
         </section>
 
         <section>
-          <h2>Summary: Designer's chooses</h2>
+          <h2>Aliases</h2>
+        </section>
+
+        <section>
+          <h2>managing coherency</h2>
+          MESI
+          • A dirty cache line is not present in any other pro-
+cessor’s cache.
+
+• Clean copies of the same cache line can reside in
+
+arbitrarily many caches.
           <ul>
-            <li>Cache line size
-              <ul>
-                <li></li>
-                <li></li>
-              </ul>
-            </li>
-            <li>Cache capacity</li>
-            <li>Higher associativity</li>
+            <li>Read exclusive</li>
+            <li>Read shared</li>
+            <li>Write exclusive</li>
+            <li>Write shared</li>
+            <li>Write dirty</li>
           </ul>
+          If a write access is detected and the processor has a clean
+
+copy of the cache line in its cache, this cache line is
+
+marked invalid. Future references will require the cache
+
+line to be reloaded. Note that a read access on another
+
+CPU does not necessitate an invalidation, multiple clean
+
+copies can very well be kept around.
+
+More sophisticated cache implementations allow another
+
+possibility to happen. Assume a cache line is dirty in
+
+one processor’s cache and a second processor wants to
+
+read or write that cache line. In this case the main mem-
+ory is out-of-date and the requesting processor must, in-
+stead, get the cache line content from the first proces-
+sor. Through snooping, the first processor notices this
+
+situation and automatically sends the requesting proces-
+sor the data. This action bypasses main memory, though
+
+in some implementations the memory controller is sup-
+posed to notice this direct transfer and store the updated
+
+cache line content in main memory. If the access is for
+
+writing the first processor then invalidates its copy of the
+
+local cache line.
+        </section>
+
+        <section>
+          <h2>Latency benchmark</h2>
         </section>
 
         <section>
@@ -290,6 +401,44 @@
             <li><b>Coherency</b> miss occurs when a block must be reloaded from the memory or lower level of cache to keep data
             coherent between multiple processors in <abbr title="Symmetric Multi Processor">SMP</abbr> system. </li>
           </ol>
+        </section>
+
+        <section>
+          <h2>Summary: Designer's chooses</h2>
+          <ul>
+            <li>Cache line size
+              <ul>
+                <li>Decreases compulsory misses</li>
+                <li>Usually decreases capacity misses</li>
+                <li></li>
+                <!-- – Increases conflict misses -->
+                <!-- + Dec -->
+<!-- ± Increases or decreases capacity misses -->
+              </ul>
+            </li>
+            <li>Cache capacity
+              <ul>
+                <li>Decreases capacity and some of conflict misses</li>
+                <li>Require more time to find data thus increase cost of hit</li>
+                <li>It is interesting to note that for the on-die L2 cache a large part (probably even the majority) of the access
+
+time is caused by wire delays. This is a physical lim-
+itation which can only get worse with increasing cache
+
+sizes. Only process shrinking (for instance, going from
+
+60nm for Merom to 45nm for Penryn in Intel’s lineup)
+
+can improve those numbers.</li>
+              </ul>
+            </li>
+            <li>Higher associativity
+            <ul>
+              <li>Decrease number of conflict misses</li>
+              <li>Complicates search thus increase cost of hit.</li>
+            </ul>
+            </li>
+          </ul>
         </section>
 
         <section>
@@ -418,6 +567,7 @@ on a multiprocessor, CPUs see different order of writes
             <li>VB is very useful to deal with conflict misses</li>
             <li>VB helps then associativity is not enough</li>
           </ul>
+          for conflict misses
         </section>
 
         <section>
@@ -428,6 +578,7 @@ on a multiprocessor, CPUs see different order of writes
             <li>Software</li>
             <li>out-or-order</li>
           </ul>
+          for capacity/compulsory misses
         </section>
 
         <section>
@@ -552,16 +703,32 @@ Weak consistency (reads and writes are arbitrarily reordered, limited only by ex
         </section>
 
         <section>
-          <h2></h2>
+          <h2>Memory bas</h2>
         </section>
 
         <section>
           <h2>Optimization for caches</h2>
           <ol>
-            <li>Keep inventory of the program small (use less data)</li>
+            <li>Watch your working set</li>
             <li>See the first rule</li>
           </ol>
+          <li>Keep inventory of the program small (use less data)</li>
         </section>
+
+        <section>
+          <h2>How to confuse prefetcher</h2>
+        </section>
+
+        <section>
+          <h2>double indirect addressing</h2>
+          not good for prefetching since address is not computed yet
+        </section>
+
+        <section>
+          <h2>images from some benchmark about importance of the knowledge about workset </h2>
+        </section>
+
+
 
 <!--         <section>
           <h2>Tools</h2>
