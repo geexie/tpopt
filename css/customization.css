@@ -92,7 +92,7 @@ body {
 *    Debug settings    *
 ***********************/
 
-.reveal .slides > section.present,
+/*.reveal .slides > section.present,
 .reveal .slides > section > section.present {
   background-color: rgba(255, 255, 255, 0.10);
 }
@@ -100,7 +100,7 @@ body {
 .reveal .slides {
   background-color: rgba(0, 0, 0, 0.15);
 }
-
+*/
 /*
 .reveal b {
   color: #FF8D14;
